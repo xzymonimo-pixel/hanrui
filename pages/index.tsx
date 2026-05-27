@@ -82,12 +82,23 @@ export async function getStaticProps() {
   })
 
   // 作品四分类：舞台 考核 编曲 个人作品
-  const worksBase = path.join(publicDir, "作品")
+  const CDN = "https://res.cloudinary.com/demfj39xl/video/upload/hanrui/public"
   const workCategories = {
-    舞台:    getVideosInSubfolder(worksBase, "作品", "舞台"),
-    考核:    getVideosInSubfolder(worksBase, "作品", "考核"),
-    编曲:    getVideosInSubfolder(worksBase, "作品", "编曲"),
-    个人作品: getVideosInSubfolder(worksBase, "作品", "个人作品"),
+    舞台: [
+      `${CDN}/作品/舞台/BACK SEAT.mp4`,
+      `${CDN}/作品/舞台/Lovely.mp4`,
+      `${CDN}/作品/舞台/克卜勒.mp4`,
+    ],
+    考核: [
+      `${CDN}/作品/考核/O.O.mp4`,
+      `${CDN}/作品/考核/Sorry Would Go a Long Way.mp4`,
+      `${CDN}/作品/考核/forever young.mp4`,
+      `${CDN}/作品/考核/你要的愛.mp4`,
+      `${CDN}/作品/考核/兰亭序.mp4`,
+      `${CDN}/作品/考核/雨愛.mp4`,
+    ],
+    编曲: [],
+    个人作品: [],
   }
 
   // 周边五分类
@@ -108,50 +119,9 @@ export async function getStaticProps() {
   }
 
   // BGM 列表
-const bgmDir = path.join(publicDir, "bgm")
-let bgmList = []
-
-try {
-  const files = fs.readdirSync(bgmDir)
-    .filter(f => f.match(/\.(mp3|ogg|flac|wav|m4a)$/i))
-
-  // 转成统一结构
-  const tracks = files.map(f => ({
-    url: `/bgm/${f}`,
-    name: f.replace(/\.[^.]+$/, "")
-  }))
-
-  // 固定前两首
-  const priorityNames = ["我离开我自己", "光亮"]
-
-  const priorityTracks = []
-  const otherTracks = []
-
-  tracks.forEach(track => {
-    if (priorityNames.includes(track.name)) {
-      priorityTracks.push(track)
-    } else {
-      otherTracks.push(track)
-    }
-  })
-
-  // 按 priorityNames 顺序排列
-  const sortedPriorityTracks = priorityNames
-    .map(name => priorityTracks.find(t => t.name === name))
-    .filter(Boolean)
-
-  // shuffle 其他歌曲
-  const shuffledOthers = otherTracks.sort(() => Math.random() - 0.5)
-
-  // 最终列表
-  bgmList = [
-    ...sortedPriorityTracks,
-    ...shuffledOthers
-  ]
-
-} catch (err) {
-  console.error("读取 BGM 失败:", err)
-}
+const BGMCDN = "https://res.cloudinary.com/demfj39xl/video/upload/hanrui/public/bgm"
+  const bgmNames = ["我离开我自己","光亮","Crazy","I Lover You 3000","Mascara","forever young","一路生花","传奇","像风一样","克卜勒","兰亭序","如願","小偷","我很快乐","旅行中忘記","星辰大海","是你","永不失联的爱 ","洋葱","玫瑰少年","言不由衷","起风了","逆光","鐵達尼號"]
+  const bgmList = bgmNames.map(name => ({ url: `${BGMCDN}/${name}.mp3`, name }))
 
   return { props: { data: { weibo, workCategories, merchCategories, bgmList } } }
 }
@@ -345,6 +315,8 @@ function MusicPlayer({ bgmList }) {
   const [playing,setPlaying]=useState(false)
   const [volume,setVolume]=useState(0.5)
   const [mini,setMini]=useState(false)
+  const [showPlaylist,setShowPlaylist]=useState(false)
+  const [dragIdx,setDragIdx]=useState(null)
   const audioRef=useRef(null)
   const fadeRef=useRef(null)
   const [interacted,setInteracted]=useState(false)
@@ -364,6 +336,15 @@ function MusicPlayer({ bgmList }) {
     window.addEventListener("keydown",h,{once:true})
     return ()=>{ window.removeEventListener("click",h); window.removeEventListener("keydown",h) }
   },[interacted])
+
+  useEffect(()=>{
+    const onVideoPlay=()=>{
+      const audio=audioRef.current
+      if(audio&&!audio.paused){ audio.pause(); setPlaying(false) }
+    }
+    window.addEventListener("video-play",onVideoPlay)
+    return ()=>window.removeEventListener("video-play",onVideoPlay)
+  },[])
 
   const fadeTo=(targetVol,cb)=>{
     const audio=audioRef.current
@@ -478,6 +459,11 @@ function MusicPlayer({ bgmList }) {
                 </div>
               </div>
 
+              <button onClick={()=>setShowPlaylist(v=>!v)} style={{
+                width:22,height:22,borderRadius:"50%",border:`1px solid ${showPlaylist?"rgba(79,168,104,0.6)":"rgba(195,228,206,0.5)"}`,
+                background:showPlaylist?"rgba(79,168,104,0.2)":"rgba(255,255,255,0.4)",cursor:"pointer",fontSize:9,color:"var(--c-muted)",
+                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+              }}>☰</button>
               {/* 折叠按钮 */}
               <button onClick={()=>setMini(true)} style={{
                 width:22,height:22,borderRadius:"50%",border:"1px solid rgba(195,228,206,0.5)",
@@ -505,6 +491,28 @@ function MusicPlayer({ bgmList }) {
               />
               <span style={{fontSize:11,color:"var(--c-muted)"}}>🔊</span>
             </div>
+            {showPlaylist&&(
+              <div style={{marginTop:10,borderTop:"1px solid rgba(195,228,206,0.4)",paddingTop:10,maxHeight:200,overflowY:"auto"}}>
+                {bgmList.map((track,i)=>(
+                  <div key={track.url} draggable
+                    onDragStart={()=>setDragIdx(i)}
+                    onDragOver={e=>e.preventDefault()}
+                    onDrop={()=>{
+                      if(dragIdx===null||dragIdx===i){setDragIdx(null);return}
+                      setDragIdx(null)
+                    }}
+                    onClick={()=>{ setIdx(i); setPlaying(false); setTimeout(()=>{ audioRef.current?.play().then(()=>setPlaying(true)).catch(()=>{}) },50) }}
+                    style={{display:"flex",alignItems:"center",gap:8,padding:"5px 6px",borderRadius:8,cursor:"pointer",background:i===idx?"rgba(79,168,104,0.15)":"transparent",transition:"background 0.15s",userSelect:"none"}}
+                    onMouseEnter={e=>{ if(i!==idx) e.currentTarget.style.background="rgba(79,168,104,0.08)" }}
+                    onMouseLeave={e=>{ if(i!==idx) e.currentTarget.style.background="transparent" }}
+                  >
+                    <span style={{fontSize:9,color:"var(--c-faint)",flexShrink:0}}>⠿</span>
+                    <span style={{fontSize:10,color:i===idx?"#4fa868":"var(--c-ink-2)",fontWeight:i===idx?700:400,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{track.name}</span>
+                    {i===idx&&<span style={{fontSize:9,color:"#4fa868",flexShrink:0}}>♪</span>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -663,7 +671,7 @@ function WorksSection({ workCategories }) {
     else{
       if(activeIdx!==null&&videoRefs.current[activeIdx]) videoRefs.current[activeIdx].pause()
       setActiveIdx(idx)
-      setTimeout(()=>videoRefs.current[idx]?.play(),50)
+      setTimeout(()=>{ videoRefs.current[idx]?.play(); window.dispatchEvent(new Event('video-play')) },50)
     }
   }
 
@@ -1213,7 +1221,7 @@ export default function Home({ data }) {
           {/* 微博图集 */}
           <div ref={el=>sectionRefs.current["weibo"]=el} id="weibo" className="section-card">
             <div className="section-heading"><span className="section-heading-badge">📸</span>微博图集</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:14}}>
               {data.weibo.map((section,si)=>{
                 const cover = section.images[0] || null
                 return (
