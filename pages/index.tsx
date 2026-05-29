@@ -4221,7 +4221,7 @@ function AboutWebsite() {
       display:"flex",gap:12,alignItems:"flex-start",
     }}>
       <span style={{fontSize:17,flexShrink:0,marginTop:2}}>🌱</span>
-      <span>作者的话：Hello！我是组建这个网站的作者，可以叫我Nimo～<br/><br/>选择创造这个网站的初衷源于我在了解ai新技术后的一次心血来潮，当时想着我也可以用现在最流行的vibe thinking（完全依靠和ai对话来编写自己的小程序，app，网站的一种模式）来实现我的想法，于是立马想到给瑞瑞创造一个独立网站🐱<br/><br/>由于是我一个人独立完成全部工作，所以会有不充分的地方（比如周边数据太难拉到所以暂时放弃，以及美食分享板块等等都因为我很难短时间收集完所有数据所以放弃）所以如果有这些数据的娘娘，拜托请发给我&gt;&lt;超级感激🙏（在这个邮箱联络我即可：<a href="mailto:realnimosann@gmail.com" style={{color:"var(--c-accent)",textDecoration:"none"}}>realnimosann@gmail.com</a>）<br/><br/>最后希望大家喜欢这个网页！也一起支持瑞瑞的星途吧～～～<br/>爱两只猫，就要一直爱两只猫 &gt;💚&lt; ～（算上建国）</span>
+      <span>作者的话：Hello！我是组建这个网站的作者，可以叫我Nimo～<br/><br/>选择创造这个网站的初衷源于我在了解ai新技术后的一次心血来潮，当时想着我也可以用现在最流行的vibe coding（完全依靠和ai对话来编写自己的小程序，app，网站的一种模式）来实现我的想法，于是立马想到给瑞瑞创造一个独立网站🐱<br/><br/>由于是我一个人独立完成全部工作，所以会有不充分的地方（比如周边数据太难拉到所以暂时放弃，以及美食分享板块等等都因为我很难短时间收集完所有数据所以放弃）所以如果有这些数据的娘娘，拜托请发给我&gt;&lt;超级感激🙏（在这个邮箱联络我即可：<a href="mailto:realnimosann@gmail.com" style={{color:"var(--c-accent)",textDecoration:"none"}}>realnimosann@gmail.com</a>）<br/><br/>最后希望大家喜欢这个网页！也一起支持瑞瑞的星途吧～～～<br/>爱两只猫，就要一直爱两只猫 &gt;💚&lt; ～（算上建国）</span>
     </div>
   )
 }
