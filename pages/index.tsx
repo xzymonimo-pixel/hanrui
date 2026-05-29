@@ -77,7 +77,7 @@ export async function getStaticProps() {
 
   const weibo = monthSet.map(month => {
     const monthResources = allResources.filter(r => r.public_id.includes(`/${month}/`))
-    const imageFiles = monthResources.map(r => ({ url: `https://res.cloudinary.com/demfj39xl/image/upload/${r.public_id}.${r.format}`, filename: r.public_id.split("/").pop(), isVideo: false }))
+    const imageFiles = monthResources.map(r => ({ url: `https://res.cloudinary.com/demfj39xl/image/upload/f_auto,q_auto/${r.public_id}.${r.format||'jpg'}`, filename: r.public_id.split("/").pop(), isVideo: false }))
     return { month, images: imageFiles.map(r => r.url), imageFiles }
   })
 
@@ -100,7 +100,7 @@ export async function getStaticProps() {
 
   // BGM 列表
   const BGMCDN = "https://res.cloudinary.com/demfj39xl/video/upload/hanrui/public/bgm"
-  const bgmNames = ["我离开我自己","光亮","Crazy","I Lover You 3000","Mascara","forever young","一路生花","传奇","像风一样","克卜勒","兰亭序","如願","小偷","我很快乐","旅行中忘記","星辰大海","是你","永不失联的爱 ","洋葱","玫瑰少年","言不由衷","起风了","逆光","鐵達尼號"]
+  const bgmNames = ["我离开我自己","光亮","Crazy","I Lover You 3000","Mascara","forever young","一路生花","传奇","像风一样","克卜勒","兰亭序","如願","小偷","我很快乐","旅行中忘記","星辰大海","是你","永不失联的爱 ","洋葱","玫瑰少年","言不由衷","起风了","逆光","我心永恒"]
   const bgmList = bgmNames.map(name => ({ url: `${BGMCDN}/${name}.mp3`, name }))
 
   return { props: { data: { weibo, workCategories: BILIBILI_VIDEOS, merchCategories, bgmList } } }
@@ -2282,7 +2282,7 @@ const STICKERS = [
   { s:"💫",size:16,x:76,y:60,dur:10,delay:0.3 },
   { s:"🍀",size:18,x:85,y:25,dur:14,delay:2.4 },
   { s:"🎀",size:22,x:92,y:70,dur:16,delay:0.9 },
-  { s:"🌱",size:16,x:8, y:85,dur:11,delay:1.8 },
+  { s:"💌",size:16,x:8, y:85,dur:11,delay:1.8 },
   { s:"🌸",size:14,x:41,y:48,dur:18,delay:4.0 },
   { s:"✿", size:20,x:55,y:92,dur:13,delay:2.7 },
   { s:"🫧", size:18,x:18,y:42,dur:15,delay:0.6 },
@@ -2426,7 +2426,7 @@ function ThatDayWidget({ weibo }) {
                 {String(now.getMonth()+1).padStart(2,"0")}/{String(now.getDate()).padStart(2,"0")} 的记忆 ✨
               </div>
               {todayImgs.length===0
-                ?<div style={{textAlign:"center",padding:"14px 0",fontSize:10.5,color:"#a4c8ae"}}>🌱 今天暂无往年记录</div>
+                ?<div style={{textAlign:"center",padding:"14px 0",fontSize:10.5,color:"#a4c8ae"}}>💌 今天暂无往年记录</div>
                 :<>
                   <div style={{
                     display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,
@@ -2489,25 +2489,10 @@ function MusicPlayer({ bgmList }) {
   const [mini,setMini]=useState(false)
   const [showPlaylist,setShowPlaylist]=useState(false)
   const [dragIdx,setDragIdx]=useState(null)
+  const [progress,setProgress]=useState(0)
+  const [duration,setDuration]=useState(0)
   const audioRef=useRef(null)
   const fadeRef=useRef(null)
-  const [interacted,setInteracted]=useState(false)
-
-  // 首次交互后自动播放
-  useEffect(()=>{
-    if(!interacted) return
-    const audio=audioRef.current
-    if(!audio||bgmList.length===0) return
-    audio.volume=volume
-    audio.play().then(()=>setPlaying(true)).catch(()=>{})
-  },[interacted])
-
-  useEffect(()=>{
-    const h=()=>{ if(!interacted) setInteracted(true) }
-    window.addEventListener("click",h,{once:true})
-    window.addEventListener("keydown",h,{once:true})
-    return ()=>{ window.removeEventListener("click",h); window.removeEventListener("keydown",h) }
-  },[interacted])
 
   useEffect(()=>{
     const onVideoPlay=()=>{
@@ -2551,6 +2536,8 @@ function MusicPlayer({ bgmList }) {
       audio.pause()
       const next=(idx+dir+bgmList.length)%bgmList.length
       setIdx(next)
+      setProgress(0)
+      setDuration(0)
       setTimeout(()=>{
         audio.load()
         audio.volume=0
@@ -2572,7 +2559,10 @@ function MusicPlayer({ bgmList }) {
 
   return (
     <>
-      <audio ref={audioRef} src={song.url} onEnded={handleEnded} preload="metadata"/>
+      <audio ref={audioRef} src={encodeURI(song.url)} onEnded={handleEnded} preload="none"
+        onTimeUpdate={()=>{ const a=audioRef.current; if(a) setProgress(a.currentTime) }}
+        onLoadedMetadata={()=>{ const a=audioRef.current; if(a) setDuration(a.duration) }}
+      />
       <div style={{
         position:"fixed",bottom:24,right:mini?16:20,
         zIndex:500,
@@ -2645,7 +2635,7 @@ function MusicPlayer({ bgmList }) {
             </div>
 
             {/* 控制区 */}
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
               <button onClick={()=>changeTrack(-1)} style={playerBtn}>⏮</button>
               <button onClick={togglePlay} style={{
                 ...playerBtn,
@@ -2653,6 +2643,18 @@ function MusicPlayer({ bgmList }) {
                 border:"1px solid rgba(79,168,104,0.4)",fontSize:14,
               }}>{playing?"⏸":"▶"}</button>
               <button onClick={()=>changeTrack(1)} style={playerBtn}>⏭</button>
+            </div>
+
+            {/* 进度条 */}
+            <div style={{marginBottom:8}}>
+              <input type="range" min="0" max={duration||100} step="0.1" value={progress}
+                onChange={e=>{ const v=parseFloat(e.target.value); if(audioRef.current) audioRef.current.currentTime=v; setProgress(v) }}
+                style={{width:"100%",accentColor:"#4fa868",height:3,cursor:"pointer",display:"block"}}
+              />
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:"var(--c-faint)",marginTop:2}}>
+                <span>{isNaN(progress)?'0:00':`${Math.floor(progress/60)}:${String(Math.floor(progress%60)).padStart(2,'0')}`}</span>
+                <span>{isNaN(duration)||duration===0?'--:--':`${Math.floor(duration/60)}:${String(Math.floor(duration%60)).padStart(2,'0')}`}</span>
+              </div>
             </div>
 
             {/* 音量 */}
@@ -2752,7 +2754,7 @@ function EmojiRain() {
   useEffect(()=>{
     const id=setInterval(()=>{
       if(items.length>12) return
-      const ni={id:Math.random(),x:Math.random()*100,e:["🌿","🍃","💚","✨","🌱"][Math.floor(Math.random()*5)]}
+      const ni={id:Math.random(),x:Math.random()*100,e:["🌿","🍃","💚","✨","💌"][Math.floor(Math.random()*5)]}
       setItems(v=>[...v,ni])
       setTimeout(()=>setItems(v=>v.filter(i=>i.id!==ni.id)),12000)
     },3000)
@@ -2934,13 +2936,13 @@ function BiliCard({ video }) {
 //  Works Section（B站版）
 // ════════════════════════════════════════════
 function WorksSection({ workCategories }) {
-  const tabs=["舞台","考核","编曲","直拍","抖音"]
+  const tabs=["舞台","考核","编曲","直拍","抖音","百万视频"]
   const [activeTab,setActiveTab]=useState("舞台")
 
   return (
     <div>
       {/* Tabs */}
-      <div style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
+      <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:20}}>
         {tabs.map(t=>(
           <button key={t} onClick={()=>setActiveTab(t)} style={{
             padding:"6px 16px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
@@ -2955,15 +2957,25 @@ function WorksSection({ workCategories }) {
 
       {activeTab==="直拍" && <ZhipaiSection/>}
       {activeTab==="抖音" && <DouyinSection/>}
+      {activeTab==="百万视频" && <BaiwanSection/>}
       {activeTab==="编曲" && <BianzouSection/>}
       {(activeTab==="舞台"||activeTab==="考核") && <BiliTabContent tab={activeTab}/>}
     </div>
   )
 }
 
+// 百万视频：一行三个，无月份导航
+function BaiwanSection() {
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
+      {BAIWANWUTAI_DATA.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
+    </div>
+  )
+}
+
 // 舞台/考核：三列网格 + 右侧月份导航
 function BiliTabContent({ tab }) {
-  const allVideos = tab==="舞台" ? (BILIBILI_VIDEOS["舞台"]||[]).map(v=>({...v,event:v.tags?.length?v.tags.join("·"):"舞台"})) : (BILIBILI_VIDEOS[tab]||[])
+  const allVideos = tab==="舞台" ? (BILIBILI_VIDEOS["舞台"]||[]).map(v=>({...v,event:v.tags?.length?v.tags.join("·"):"舞台"})) : tab==="百万视频" ? BAIWANWUTAI_DATA : (BILIBILI_VIDEOS[tab]||[])
   const [activeMonth, setActiveMonth] = useState<string|null>(null)
 
   if(allVideos.length===0) return (
@@ -2975,72 +2987,47 @@ function BiliTabContent({ tab }) {
 
   const byDate: Record<string,typeof allVideos> = {}
   allVideos.forEach(v=>{ if(!byDate[v.date]) byDate[v.date]=[]; byDate[v.date].push(v) })
-  const sortedDates = Object.keys(byDate).sort((a,b)=>b.localeCompare(a))
+  const sortedDates = Object.keys(byDate).sort((a,b)=>a.localeCompare(b))
   const displayed = activeMonth ? byDate[activeMonth]||[] : allVideos
 
   const pickRandom = () => window.open(displayed[Math.floor(Math.random()*displayed.length)].url,"_blank")
 
   return (
-    <div style={{display:"flex",gap:20}}>
-      {/* 主区：三列网格 */}
-      <div style={{flex:1,minWidth:0}}>
-        <button onClick={pickRandom} style={{
-          width:"100%",marginBottom:14,padding:"9px 14px",
-          background:"linear-gradient(135deg,rgba(162,214,174,0.5),rgba(130,190,152,0.38))",
-          border:"1px solid rgba(120,185,142,0.6)",borderRadius:10,cursor:"pointer",
-          fontFamily:"inherit",fontSize:12,fontWeight:700,color:"var(--c-ink)",
-          display:"flex",alignItems:"center",justifyContent:"center",gap:7,
-          boxShadow:"0 2px 10px rgba(40,100,56,0.10)",transition:"all 0.18s",
-        }}
-        onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(40,100,56,0.20)"}
-        onMouseLeave={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.10)"}
-        ><span style={{fontSize:16}}>🎲</span> 随机今日 · 帮我选一个！</button>
+    <div>
+      {/* 随机按钮 */}
+      <button onClick={pickRandom} style={{
+        width:"100%",marginBottom:12,padding:"9px 14px",
+        background:"linear-gradient(135deg,rgba(162,214,174,0.5),rgba(130,190,152,0.38))",
+        border:"1px solid rgba(120,185,142,0.6)",borderRadius:10,cursor:"pointer",
+        fontFamily:"inherit",fontSize:12,fontWeight:700,color:"var(--c-ink)",
+        display:"flex",alignItems:"center",justifyContent:"center",gap:7,
+        boxShadow:"0 2px 10px rgba(40,100,56,0.10)",transition:"all 0.18s",
+      }}
+      onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(40,100,56,0.20)"}
+      onMouseLeave={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.10)"}
+      ><span style={{fontSize:16}}>🎲</span> 随机今日 · 帮我选一个！</button>
 
-        {activeMonth && (
-          <div style={{marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:12,fontWeight:700,color:"var(--c-accent)"}}>{activeMonth}</span>
-            <button onClick={()=>setActiveMonth(null)} style={{
-              fontSize:11,padding:"2px 8px",borderRadius:100,cursor:"pointer",fontFamily:"inherit",
-              border:"1px solid rgba(195,228,206,0.5)",background:"rgba(240,250,243,0.7)",color:"var(--c-muted)",
-            }}>× 显示全部</button>
-          </div>
-        )}
-
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-          {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
-        </div>
+      {/* 月份横排筛选 */}
+      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14,flexWrap:"wrap"}}>
+        <button onClick={()=>setActiveMonth(null)} style={{
+          padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
+          border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
+          background:!activeMonth?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.5)",
+          color:!activeMonth?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
+        }}>全部 ({allVideos.length})</button>
+        {sortedDates.map(date=>(
+          <button key={date} onClick={()=>setActiveMonth(date)} style={{
+            padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
+            border:`1px solid ${activeMonth===date?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
+            background:activeMonth===date?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.5)",
+            color:activeMonth===date?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
+          }}>{date} <span style={{fontSize:9,opacity:0.6}}>({byDate[date].length})</span></button>
+        ))}
       </div>
 
-      {/* 右侧：月份导航 */}
-      <div style={{flex:"0 0 auto",width:110}}>
-        <div style={{
-          background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-          border:"1px solid rgba(195,228,206,0.45)",borderRadius:14,padding:"12px 10px",
-          position:"sticky",top:20,
-        }}>
-          <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:10}}>📅 月份</div>
-          <div style={{display:"flex",flexDirection:"column",gap:4}}>
-            <button onClick={()=>setActiveMonth(null)} style={{
-              padding:"5px 8px",borderRadius:8,cursor:"pointer",fontFamily:"inherit",
-              fontSize:11,fontWeight:600,textAlign:"left",
-              border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.3)"}`,
-              background:!activeMonth?"rgba(162,214,174,0.3)":"transparent",
-              color:!activeMonth?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
-            }}>全部 ({allVideos.length})</button>
-            {sortedDates.map(date=>(
-              <button key={date} onClick={()=>setActiveMonth(date)} style={{
-                padding:"5px 8px",borderRadius:8,cursor:"pointer",fontFamily:"inherit",
-                fontSize:11,fontWeight:600,textAlign:"left",
-                border:`1px solid ${activeMonth===date?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.3)"}`,
-                background:activeMonth===date?"rgba(162,214,174,0.3)":"transparent",
-                color:activeMonth===date?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
-              }}
-              onMouseEnter={e=>{ if(activeMonth!==date) e.currentTarget.style.background="rgba(162,214,174,0.1)" }}
-              onMouseLeave={e=>{ if(activeMonth!==date) e.currentTarget.style.background="transparent" }}
-              >{date} <span style={{fontSize:9,opacity:0.6}}>({byDate[date].length})</span></button>
-            ))}
-          </div>
-        </div>
+      {/* 视频网格 */}
+      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:12}}>
+        {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
   )
@@ -3067,80 +3054,79 @@ function ZhipaiSection() {
   }
 
   return (
-    <div style={{display:"flex",gap:20}}>
-      <div style={{flex:"0 0 auto",width:120}}>
-        <div style={{fontSize:11,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.08em",marginBottom:12}}>📷 站姐</div>
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {ZHIPAI_DATA.map(s=>(
-            <button key={s.id} onClick={()=>setActiveStation(s.id)} style={{
-              display:"flex",flexDirection:"column",alignItems:"center",gap:5,padding:"10px 6px",
-              background:activeStation===s.id?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.52)",
-              border:`1px solid ${activeStation===s.id?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
-              borderRadius:12,cursor:"pointer",fontFamily:"inherit",transition:"all 0.18s",
-            }}>
-              <div style={{
-                width:44,height:44,borderRadius:"50%",
-                background:`linear-gradient(135deg,${s.color}cc,${s.color}88)`,
-                border:`2px solid ${s.color}55`,
-                display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:14,fontWeight:900,color:"#fff",
-                boxShadow:`0 2px 8px ${s.color}44`,flexShrink:0,
-              }}>{s.initials}</div>
-              <div style={{fontSize:10,fontWeight:600,color:"var(--c-ink-2)",textAlign:"center",lineHeight:1.3,maxWidth:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name}</div>
-              <div style={{fontSize:9,color:"var(--c-faint)"}}>{s.videos.length} 条</div>
-            </button>
-          ))}
-        </div>
+    <div>
+      {/* 站姐头像横排 */}
+      <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:10,marginBottom:16,scrollbarWidth:"none"}}
+        className="tabs-scroll">
+        {ZHIPAI_DATA.map(s=>(
+          <button key={s.id} onClick={()=>setActiveStation(s.id)} style={{
+            display:"flex",flexDirection:"column",alignItems:"center",gap:5,
+            padding:"10px 12px",flexShrink:0,
+            background:activeStation===s.id?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.52)",
+            border:`1px solid ${activeStation===s.id?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
+            borderRadius:12,cursor:"pointer",fontFamily:"inherit",transition:"all 0.18s",
+          }}>
+            <div style={{
+              width:44,height:44,borderRadius:"50%",
+              background:`linear-gradient(135deg,${s.color}cc,${s.color}88)`,
+              border:`2px solid ${s.color}55`,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              fontSize:14,fontWeight:900,color:"#fff",
+              boxShadow:`0 2px 8px ${s.color}44`,flexShrink:0,
+            }}>{s.initials}</div>
+            <div style={{fontSize:10,fontWeight:600,color:"var(--c-ink-2)",textAlign:"center",lineHeight:1.3,maxWidth:72,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name.replace(/丨张函瑞|_张函瑞|-张函瑞/g,'')}</div>
+            <div style={{fontSize:9,color:"var(--c-faint)"}}>{s.videos.length}条</div>
+          </button>
+        ))}
       </div>
 
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{
-          background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-          border:"1px solid rgba(195,228,206,0.45)",borderRadius:14,padding:"18px 20px",
-        }}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-            <div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,${station.color}cc,${station.color}88)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:900,color:"#fff",flexShrink:0}}>{station.initials}</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--c-ink)"}}>{station.name}</div>
-              <div style={{fontSize:10,color:"var(--c-muted)"}}>共 {station.videos.length} 条直拍</div>
+      {/* 年份快速导航 */}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+        {years.map(year=>(
+          <button key={year} onClick={()=>scrollToYear(year)} style={{
+            padding:"3px 10px",borderRadius:100,fontSize:11,fontWeight:700,
+            fontFamily:"inherit",cursor:"pointer",
+            border:"1px solid rgba(120,185,142,0.5)",
+            background:"rgba(162,214,174,0.2)",color:"var(--c-accent)",
+            transition:"all 0.15s",
+          }}
+          onMouseEnter={e=>e.currentTarget.style.background="rgba(162,214,174,0.45)"}
+          onMouseLeave={e=>e.currentTarget.style.background="rgba(162,214,174,0.2)"}
+          >{year} <span style={{fontSize:9,opacity:0.7}}>({byYear[year].length})</span></button>
+        ))}
+      </div>
+
+      {/* 视频网格 */}
+      <div style={{
+        background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+        border:"1px solid rgba(195,228,206,0.45)",borderRadius:14,padding:"16px",
+      }}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:`linear-gradient(135deg,${station.color}cc,${station.color}88)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:"#fff",flexShrink:0}}>{station.initials}</div>
+          <div style={{fontSize:13,fontWeight:700,color:"var(--c-ink)"}}>{station.name}</div>
+          <div style={{fontSize:10,color:"var(--c-muted)",marginLeft:"auto"}}>共 {station.videos.length} 条</div>
+        </div>
+
+        {years.map(year=>(
+          <div key={year} id={`zhipai-${station.id}-${year}`} style={{marginBottom:24}}>
+            <div style={{
+              display:"flex",alignItems:"center",gap:8,marginBottom:12,
+              paddingBottom:8,borderBottom:"1px solid rgba(195,228,206,0.4)",
+            }}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:`linear-gradient(135deg,${station.color}cc,${station.color}88)`,flexShrink:0}}/>
+              <span style={{fontSize:13,fontWeight:800,color:"var(--c-ink)"}}>{year}</span>
+              <span style={{fontSize:10,color:"var(--c-muted)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.3)",borderRadius:100,padding:"1px 8px"}}>{byYear[year].length} 条</span>
             </div>
-            <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-              {years.map(year=>(
-                <button key={year} onClick={()=>scrollToYear(year)} style={{
-                  padding:"3px 10px",borderRadius:100,fontSize:11,fontWeight:700,
-                  fontFamily:"inherit",cursor:"pointer",
-                  border:"1px solid rgba(120,185,142,0.5)",
-                  background:"rgba(162,214,174,0.2)",color:"var(--c-accent)",
-                  transition:"all 0.15s",
-                }}
-                onMouseEnter={e=>e.currentTarget.style.background="rgba(162,214,174,0.45)"}
-                onMouseLeave={e=>e.currentTarget.style.background="rgba(162,214,174,0.2)"}
-                >{year} <span style={{fontSize:9,opacity:0.7}}>({byYear[year].length})</span></button>
-              ))}
+            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+              {byYear[year].map((v,i)=>{
+                const bvid = v.url.split('/video/')[1]?.replace('/','') || `zp${station.id}${i}`
+                return (
+                  <BiliCard key={`${bvid}-${i}`} video={{bvid, title:v.title, cover:v.cover||'', url:v.url, event:v.event}}/>
+                )
+              })}
             </div>
           </div>
-
-          {years.map(year=>(
-            <div key={year} id={`zhipai-${station.id}-${year}`} style={{marginBottom:24}}>
-              <div style={{
-                display:"flex",alignItems:"center",gap:8,marginBottom:12,
-                paddingBottom:8,borderBottom:"1px solid rgba(195,228,206,0.4)",
-              }}>
-                <div style={{width:10,height:10,borderRadius:"50%",background:`linear-gradient(135deg,${station.color}cc,${station.color}88)`,flexShrink:0}}/>
-                <span style={{fontSize:13,fontWeight:800,color:"var(--c-ink)"}}>{year}</span>
-                <span style={{fontSize:10,color:"var(--c-muted)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.3)",borderRadius:100,padding:"1px 8px"}}>{byYear[year].length} 条</span>
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:10}}>
-                {byYear[year].map((v,i)=>{
-                  const bvid = v.url.split('/video/')[1]?.replace('/','') || `zp${station.id}${i}`
-                  return (
-                    <BiliCard key={`${bvid}-${i}`} video={{bvid, title:v.title, cover:v.cover||'', url:v.url, event:v.event}}/>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   )
@@ -3173,7 +3159,7 @@ function MerchSection({ merchCategories, onLightbox }) {
           <p style={{fontSize:13}}>图片放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/merch/{activeTab}/</code> 下 ✨</p>
         </div>
       ):(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:13}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13}}>
           {imgs.map((img,i)=>(
             <div key={i}
               onClick={()=>onLightbox(img)}
@@ -3251,7 +3237,9 @@ function WeiboMediaCard({ item, onClick, idx }) {
     <div style={wrapStyle} onClick={() => onClick(url)} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       {isVideo
         ? <video src={url} autoPlay loop muted playsInline style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",borderRadius:style==="normal"?12:4}}/>
-        : <img src={url} alt="" loading="lazy" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",borderRadius:style==="normal"?12:4}}/>
+        : <img src={url.replace('/image/upload/','/image/upload/w_400,h_400,c_fill,q_auto,f_auto/')} alt="" loading="lazy" decoding="async"
+            onError={e=>{(e.target as HTMLImageElement).style.opacity='0.2'}}
+            style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",borderRadius:style==="normal"?12:4}}/>
       }
       {/* LIVE badge */}
       {isVideo && <span style={{position:"absolute",top:8,left:8,fontSize:8,background:"rgba(79,168,104,0.7)",border:"1px solid rgba(79,168,104,0.5)",borderRadius:4,padding:"1px 5px",color:"#fff",fontWeight:700,letterSpacing:"0.05em"}}>LIVE</span>}
@@ -3267,12 +3255,13 @@ function WeiboMediaCard({ item, onClick, idx }) {
 // ════════════════════════════════════════════
 function ProfileSection() {
   const timeline=[
-    {year:"2009",text:"10月18日,张函瑞出生于重庆 🌿"},
-    {year:"2022",text:"加入时代峰峻练习生体系并在一个月内就公开 ✨"},
-    {year:"2023",text:"新年音乐会独自登台SOLO演唱光亮 💚"},
-    {year:"2024",text:"持续成长，每一天都在发光 🌸"},
-    {year:"2025",text:"两次考核展现压倒性实力暴风吸粉 ⭐"},
-    {year:"2026",text:"继续前行,展现更多的可能性 🎉"},
+    {year:"2009",text:"这一年的10月18日,是一个美好的日子。重庆迎来了一位可爱的小男孩，父母给他起名为\u201c张函瑞\u201d，一个可爱又朗朗上口的名字，仿佛自带英文名Henry，后来也确实取了Henry做英文名 🌿"},
+    {year:"2021",text:"这一年，一个爱唱歌的小孩哥单枪匹马闯进了中国好声音重庆赛区的决赛，彼时他才刚系统接触唱歌没多久，但却展现出了超高的声乐天赋。虽然最后因为年龄太小没能进入全国赛，但小函瑞开始被很多业内的人士看见🎤"},
+    {year:"2022",text:"在表姐的怂恿下，张函瑞去了当地一家赫赫有名的公司——时代峰峻面试，结果不仅立马被选上，而且在进入公司后的一个月，在2月14日这天，作为TF家族四代练习生正式公开了。或许是面试时唱的太惊艳让公司立马签约生怕错过此等天才吧 ✨"},
+    {year:"2023",text:"这一年的春节，一众楼丝观看新年音乐会时，突然有一个新面孔出现，演唱了一首独唱的《光亮》，这就是张函瑞的第一次新音体验。如此珍贵的solo舞台，他也不负众望，惊艳的高音和熟练运用的技巧造就了一个经典又出圈的作品💚"},
+    {year:"2024",text:"这一年张函瑞进入了真正的成长期，有青春期的诸多烦恼，也有容貌上的蜕变。让他有一点小小的焦虑，但夜深人静时独自思考反省是成长最重要的一部分。学会责任感，永远保持一颗上进心，张函瑞的INFJ特质开始显现 🌸"},
+    {year:"2025",text:"这一年是张函瑞颇为动荡的一年，当然，是好的\u201c动荡\u201d。上半年结束了紧张的中考，就被\u201c关\u201d进了训练营开始了名为突围的竞技秀。张函瑞用自己的实力和舞台打破一个个对他的质疑，年底更是迎来了暴风吸粉期。作为一个豆德满分的小爱豆，张函瑞严于律己，宽以待人，萌萌的外表下是一颗坚韧又温柔的心 ⭐"},
+    {year:"2026",text:"新的故事会怎样呢？期待张函瑞续写～ 🎉"},
   ]
   const tags={
    舞台风格:["大主唱","舞台人格","情绪感染力","全能ACE","饭撒的神"],
@@ -3333,79 +3322,168 @@ function ProfileSection() {
 }
 
 // 成长录通用BiliTab：三列网格+右侧月份导航
+const BAIWANWUTAI_DATA = [
+  { bvid:"BV1F44y1P7qa", title:"张函瑞歌曲COVER《我很快乐》", cover:"http://i0.hdslb.com/bfs/archive/7d584deb8731a48f13fafa5301c339409f546859.jpg", url:"https://www.bilibili.com/video/BV1F44y1P7qa/", date:"2022-03", tags:[] },
+  { bvid:"BV1VW4y1J7w5", title:"张函瑞 10月路演《兰亭序》", cover:"http://i0.hdslb.com/bfs/archive/ab1599583216f208aa20e29540e7c10615d0541a.jpg", url:"https://www.bilibili.com/video/BV1VW4y1J7w5/", date:"2022-10", tags:[] },
+  { bvid:"BV1234y1Z7CX", title:"「2023新年音乐会——瞬间」《光亮》纯享版", cover:"http://i1.hdslb.com/bfs/archive/2e64318c051b6887d547293766495432364d1908.jpg", url:"https://www.bilibili.com/video/BV1234y1Z7CX/", date:"2023-01", tags:[] },
+  { bvid:"BV1od4y1f7H4", title:"「TF少年梦工厂-立夏」《是你》纯享版", cover:"http://i1.hdslb.com/bfs/archive/2679a4fa83f35d375d1b8776c44063bf763ac543.jpg", url:"https://www.bilibili.com/video/BV1od4y1f7H4/", date:"2023-05", tags:[] },
+  { bvid:"BV1aC4y1w7ih", title:"【张函瑞】来听14岁男初绝美转音翻唱《小偷》，每一处转音都太丝滑啦", cover:"http://i2.hdslb.com/bfs/archive/e0ff3f5ab9de038efa0249a5c698708bd2792b65.jpg", url:"https://www.bilibili.com/video/BV1aC4y1w7ih/", date:"2023-12", tags:[] },
+  { bvid:"BV1LtDsYbEFS", title:"【张函瑞】15岁小孩翻唱《水星记》变声期也挡不住的好听！！", cover:"http://i0.hdslb.com/bfs/archive/91e916abc70a7fb946f1190d46bb054f0fc187f0.jpg", url:"https://www.bilibili.com/video/BV1LtDsYbEFS/", date:"2024-11", tags:[] },
+  { bvid:"BV1EgwmebEqz", title:"【张函瑞丨4K直拍】 如果当时 直拍 丨15岁男初深情献唱 · 红雨瓢泼泛起了回忆怎么潜", cover:"http://i2.hdslb.com/bfs/archive/9e34c9326d8a65309c1dac83eb149b5546d3d4c1.jpg", url:"https://www.bilibili.com/video/BV1EgwmebEqz/", date:"2025-01", tags:[] },
+  { bvid:"BV1fYwNekEwi", title:"【张函瑞】15岁男初上演教科书式禁欲S 这个视频的退出键到底在哪？ 《Guilty》直拍", cover:"http://i1.hdslb.com/bfs/archive/2a821722b524924fb7a21678407a04cf58fd79f2.jpg", url:"https://www.bilibili.com/video/BV1fYwNekEwi/", date:"2025-01", tags:[] },
+  { bvid:"BV1VoRaY4EuK", title:"张函瑞《Letting Go》声乐COVER", cover:"http://i0.hdslb.com/bfs/archive/54aabc05553532d73abdfd7e7f90fab5174dcd71.jpg", url:"https://www.bilibili.com/video/BV1VoRaY4EuK/", date:"2025-03", tags:[] },
+  { bvid:"BV1T4TXzcEgN", title:"张函瑞《Vroom Vroom》舞蹈COVER", cover:"http://i2.hdslb.com/bfs/archive/b7f85a21b2c2e6220e4ecfb5715f8526bc4a089c.jpg", url:"https://www.bilibili.com/video/BV1T4TXzcEgN/", date:"2025-06", tags:[] },
+  { bvid:"BV1fxtbzKESN", title:"【张函瑞】雨爱双机位4K精剪横屏直拍 新舞台神仙嗓音 百万直拍预定💘开口即跪的纯欲少年音", cover:"http://i0.hdslb.com/bfs/archive/60e41a77776643e907bbd87f46478cb956a5c07d.jpg", url:"https://www.bilibili.com/video/BV1fxtbzKESN/", date:"2025-08", tags:[] },
+  { bvid:"BV11Btaz9ERL", title:"【Lucifer｜张函瑞】四代最强表管翻跳SM神曲，完全移不开视线！TF家族四代公演张函瑞4K精剪直拍", cover:"http://i1.hdslb.com/bfs/archive/62ace7c506c6ce1a2dce740f92fb89856855e5c8.jpg", url:"https://www.bilibili.com/video/BV11Btaz9ERL/", date:"2025-08", tags:[] },
+  { bvid:"BV1w6t8z1EfU", title:"【Deja Vu｜张函瑞】浮生若寄，彩带飘落的瞬间，你我仿若旧识。张函瑞TF家族四代公演4K精剪直拍", cover:"http://i2.hdslb.com/bfs/archive/637f1f465865607ddba2c04604cfa5c193619449.jpg", url:"https://www.bilibili.com/video/BV1w6t8z1EfU/", date:"2025-08", tags:[] },
+  { bvid:"BV1xsvzBGE8g", title:"【Manta｜张函瑞】双机位4K精剪直拍", cover:"http://i2.hdslb.com/bfs/archive/1c2d866cdc64d07b919f1d9b4fdc4f3e18a7160d.jpg", url:"https://www.bilibili.com/video/BV1xsvzBGE8g/", date:"2025-12", tags:[] },
+  { bvid:"BV1JABzBMEhh", title:"【ON｜张函瑞】4K精剪直拍", cover:"http://i0.hdslb.com/bfs/archive/86874950f131ee795e16302fadc03d7ca0126c9e.jpg", url:"https://www.bilibili.com/video/BV1JABzBMEhh/", date:"2025-12", tags:[] },
+  { bvid:"BV1PMBiBMEze", title:"【张函瑞 | 爱要坦荡荡】4K精剪横屏直拍 耳机音量调大！全程嘴角上扬 可爱超标实力满分 元气主唱YYDS!!!", cover:"http://i0.hdslb.com/bfs/archive/09954882bccec5fda65c093567e04faf2ffffcc5.jpg", url:"https://www.bilibili.com/video/BV1PMBiBMEze/", date:"2025-12", tags:[] },
+  { bvid:"BV1pDBiBBEBi", title:"【野心家｜张函瑞】4K精剪直拍（含字幕）", cover:"http://i0.hdslb.com/bfs/archive/c10b0c0da15e69cf5f8c629c5ab50b0cc48aaffc.jpg", url:"https://www.bilibili.com/video/BV1pDBiBBEBi/", date:"2025-12", tags:[] },
+]
+
 const XINGQI5_DATA = [
-  { bvid:"BV13b421E7Qu", title:"《星期五练习生》58:「修渔期」EP03——突如其来的食材寻宝", cover:"http://i1.hdslb.com/bfs/archive/8c0d30e12f915359134ff48d1d7a48f4be852962.jpg", url:"https://www.bilibili.com/video/BV13b421E7Qu/", date:"2024-08", tags:[] },
-  { bvid:"BV1bJBLYfEJz", title:"《星期五练习生》76：新脑子转的就是快:", cover:"http://i0.hdslb.com/bfs/archive/e8d2b211bcc377781c72d785f91f88ab8da6a450.jpg", url:"https://www.bilibili.com/video/BV1bJBLYfEJz/", date:"2024-12", tags:[] },
-  { bvid:"BV1skCpYREdE", title:"《星期五练习生》78：距离的神", cover:"http://i1.hdslb.com/bfs/archive/5c6a1e32b833a9fc25c9af8369da6974cf30eeee.jpg", url:"https://www.bilibili.com/video/BV1skCpYREdE/", date:"2024-12", tags:[] },
-  { bvid:"BV1hefHYKEDF", title:"《星期五练习生》79：这个feel倍儿爽", cover:"http://i1.hdslb.com/bfs/archive/32bc0c56a5855c8f17250d26ba5058b29d93e525.jpg", url:"https://www.bilibili.com/video/BV1hefHYKEDF/", date:"2025-01", tags:[] },
-  { bvid:"BV1SDFoeNEgg", title:"《星期五练习生》80：我这无人能敌的手气", cover:"http://i0.hdslb.com/bfs/archive/7e156db3d264e2f1ed50d55023fcbb01fb5096ed.jpg", url:"https://www.bilibili.com/video/BV1SDFoeNEgg/", date:"2025-02", tags:[] },
-  { bvid:"BV1pJKjedEF2", title:"《星期五练习生》81：圆圆滚滚乐发财", cover:"http://i0.hdslb.com/bfs/archive/84f91d0d3684aa2488d54b5ff35e14df5a35f75f.jpg", url:"https://www.bilibili.com/video/BV1pJKjedEF2/", date:"2025-02", tags:[] },
-  { bvid:"BV1hXAoeyETm", title:"《星期五练习生》82：谁是三寸不烂之舌", cover:"http://i1.hdslb.com/bfs/archive/6e3e3de48e870e5ad3b0f9d47e4deff6b0115c2d.jpg", url:"https://www.bilibili.com/video/BV1hXAoeyETm/", date:"2025-02", tags:[] },
-  { bvid:"BV1Rp9uY4ExU", title:"《星期五练习生》83：热火朝天的冬季集训（1）", cover:"http://i2.hdslb.com/bfs/archive/f61453580a17573a85319210069510e0849bdc10.jpg", url:"https://www.bilibili.com/video/BV1Rp9uY4ExU/", date:"2025-02", tags:[] },
-  { bvid:"BV1cV91YgEiL", title:"《星期五练习生》84：热火朝天的冬季集训（2）", cover:"http://i2.hdslb.com/bfs/archive/f54fe594e7afd8923bb91dd202b3a29381f469bf.jpg", url:"https://www.bilibili.com/video/BV1cV91YgEiL/", date:"2025-03", tags:[] },
-  { bvid:"BV1uQQzYAE2z", title:"《星期五练习生》85：热火朝天的冬季集训（3）", cover:"http://i1.hdslb.com/bfs/archive/8a47c712ea63cb2caed8b674f98b0684ee04b0f0.jpg", url:"https://www.bilibili.com/video/BV1uQQzYAE2z/", date:"2025-03", tags:[] },
-  { bvid:"BV15RXkYDEyf", title:"《星期五练习生》86：热火朝天的冬季集训（4）", cover:"http://i0.hdslb.com/bfs/archive/bb7b31214dcb636a508c20b1fc70aa3d19493ceb.jpg", url:"https://www.bilibili.com/video/BV15RXkYDEyf/", date:"2025-03", tags:[] },
-  { bvid:"BV16WZ9YuEXi", title:"《星期五练习生》89：甜度爆表", cover:"http://i2.hdslb.com/bfs/archive/bd85becf855c93731c0bc21c686dbb7bd12c2ee1.jpg", url:"https://www.bilibili.com/video/BV16WZ9YuEXi/", date:"2025-04", tags:[] },
-  { bvid:"BV1Y6EtzeEXo", title:"《星期五练习生》95：瞧我的小嘴巴", cover:"http://i1.hdslb.com/bfs/archive/58b5eaabddb4606c80ef7332b5cc282f58880f51.jpg", url:"https://www.bilibili.com/video/BV1Y6EtzeEXo/", date:"2025-05", tags:[] },
-  { bvid:"BV1HzTuzAEqC", title:"《星期五练习生》98：无间道", cover:"http://i2.hdslb.com/bfs/archive/f74dd41c487f5b4f188556414c60aebcc6ad163c.jpg", url:"https://www.bilibili.com/video/BV1HzTuzAEqC/", date:"2025-06", tags:[] },
-  { bvid:"BV167Hkz4ELh", title:"《星期五练习生》102：神奇的猜丁壳", cover:"http://i0.hdslb.com/bfs/archive/014110698f64d0573937afabef0134726b172b39.jpg", url:"https://www.bilibili.com/video/BV167Hkz4ELh/", date:"2025-09", tags:[] },
-  { bvid:"BV1UcW3zREpy", title:"《星期五练习生》103：人生就是冲刺", cover:"http://i0.hdslb.com/bfs/archive/89f75001e0478a94bf966dcd0496290e543e5518.jpg", url:"https://www.bilibili.com/video/BV1UcW3zREpy/", date:"2025-09", tags:[] },
-  { bvid:"BV1mAnVznEnQ", title:"《星期五练习生》104：命运的巅峰对决", cover:"http://i0.hdslb.com/bfs/archive/8699338d8ca99c605c7e8fcb2a6215b75b548f00.jpg", url:"https://www.bilibili.com/video/BV1mAnVznEnQ/", date:"2025-09", tags:[] },
-  { bvid:"BV1BgHVzzEHm", title:"《星期五练习生》105：卡丁车接力赛", cover:"http://i0.hdslb.com/bfs/archive/11f60140e2cfb6e3207fa5b1564ea6c35eb550dd.jpg", url:"https://www.bilibili.com/video/BV1BgHVzzEHm/", date:"2025-10", tags:[] },
-  { bvid:"BV19hWCzWEJj", title:"《星期五练习生》106：“海龟”不是“这个汤”", cover:"http://i0.hdslb.com/bfs/archive/30836e9bff6a353a31f83da3811671357ef026c1.jpg", url:"https://www.bilibili.com/video/BV19hWCzWEJj/", date:"2025-10", tags:[] },
-  { bvid:"BV1xYsnzmEV3", title:"《星期五练习生》107:离谱马拉松大赛", cover:"http://i2.hdslb.com/bfs/archive/67ddfc9df44a0a0a29b10b533f525be02a1d2d11.jpg", url:"https://www.bilibili.com/video/BV1xYsnzmEV3/", date:"2025-10", tags:[] },
-  { bvid:"BV1os1KBbEoL", title:"《星期五练习生》108:“阿巴阿巴”描述大会", cover:"http://i0.hdslb.com/bfs/archive/f5663d94f25501378422b419dc6b4efffa45ccbb.jpg", url:"https://www.bilibili.com/video/BV1os1KBbEoL/", date:"2025-10", tags:[] },
-  { bvid:"BV1qP23BGEaw", title:"《星期五练习生》109:好想这样活一次", cover:"http://i2.hdslb.com/bfs/archive/c7bcaf0ab0dd3c93e9906a883013910c1700eb6e.jpg", url:"https://www.bilibili.com/video/BV1qP23BGEaw/", date:"2025-11", tags:[] },
-  { bvid:"BV1HACMBvETY", title:"《星期五练习生》110:鸭力不山大", cover:"http://i1.hdslb.com/bfs/archive/eeb8152af26f954dfc1b21bfddfb5c9ae760cb17.jpg", url:"https://www.bilibili.com/video/BV1HACMBvETY/", date:"2025-11", tags:[] },
-  { bvid:"BV11YUjByEr5", title:"《星期五练习生》111:你的尖叫我的梦", cover:"http://i2.hdslb.com/bfs/archive/cb319d125d293e05ef5355a80e00d10596bbcab3.jpg", url:"https://www.bilibili.com/video/BV11YUjByEr5/", date:"2025-11", tags:[] },
-  { bvid:"BV1vUSEBKEuM", title:"《星期五练习生》112:虚无游戏世界", cover:"http://i2.hdslb.com/bfs/archive/fda0830dc9d2d407fea69863872a767b33cfdeb0.jpg", url:"https://www.bilibili.com/video/BV1vUSEBKEuM/", date:"2025-11", tags:[] },
-  { bvid:"BV1xnmmBcEtr", title:"《星期五练习生》113:安静的美男子", cover:"http://i2.hdslb.com/bfs/archive/4d83fb015e8e9ee5407c05357c3340b7680822bd.jpg", url:"https://www.bilibili.com/video/BV1xnmmBcEtr/", date:"2025-12", tags:[] },
-  { bvid:"BV1BAq9B6Ej3", title:"《星期五练习生》114:今天不许好好唱", cover:"http://i1.hdslb.com/bfs/archive/4d150183de5100500020e77b87b5bc8b0beba924.jpg", url:"https://www.bilibili.com/video/BV1BAq9B6Ej3/", date:"2025-12", tags:[] },
-  { bvid:"BV1vtvQBZEf2", title:"《星期五练习生》115：我们的“元”气值满了", cover:"http://i1.hdslb.com/bfs/archive/9b3dc3feb6d14590496fdfa3f82bc3af1c7fe3ad.jpg", url:"https://www.bilibili.com/video/BV1vtvQBZEf2/", date:"2026-01", tags:[] },
-  { bvid:"BV1vPiFB7Eap", title:"《星期五练习生》116：神的主理人", cover:"http://i0.hdslb.com/bfs/archive/727266af41aa9e91a2eb5cdde7c9d29793063318.jpg", url:"https://www.bilibili.com/video/BV1vPiFB7Eap/", date:"2026-01", tags:[] },
-  { bvid:"BV1ztrKBXE6n", title:"《星期五练习生》117：直觉无限公司", cover:"http://i1.hdslb.com/bfs/archive/3f56f9fdc2f1762f17428939479a47e811385d40.jpg", url:"https://www.bilibili.com/video/BV1ztrKBXE6n/", date:"2026-01", tags:[] },
-  { bvid:"BV1dFrkBmEDt", title:"《星期五练习生》118：高雅人士局", cover:"http://i0.hdslb.com/bfs/archive/e836d0958d279ab65b608165adead27f29388365.jpg", url:"https://www.bilibili.com/video/BV1dFrkBmEDt/", date:"2026-01", tags:[] },
-  { bvid:"BV1hYzMBgEk5", title:"《星期五练习生》119：纸上谈兵", cover:"http://i2.hdslb.com/bfs/archive/38c7361ee430a204e4e8dc2f2464b045f2f4bf45.jpg", url:"https://www.bilibili.com/video/BV1hYzMBgEk5/", date:"2026-01", tags:[] },
-  { bvid:"BV1J36vBPEWr", title:"《星期五练习生》120：抽象的狼人杀", cover:"http://i2.hdslb.com/bfs/archive/53c994b6b6549b5d4c327ae900701c91252846b6.jpg", url:"https://www.bilibili.com/video/BV1J36vBPEWr/", date:"2026-01", tags:[] },
-  { bvid:"BV1VvZTBRELU", title:"《星期五练习生》122：《厨神争霸》", cover:"http://i2.hdslb.com/bfs/archive/9894687d703b6974d01b94160cb230b0e8552212.jpg", url:"https://www.bilibili.com/video/BV1VvZTBRELU/", date:"2026-02", tags:[] },
-  { bvid:"BV1TXZrB3Eux", title:"《星期五练习生》123：《反差的LOVE》", cover:"http://i0.hdslb.com/bfs/archive/060f8f04a0bb1cc695a0c9e31396d261311f33a0.jpg", url:"https://www.bilibili.com/video/BV1TXZrB3Eux/", date:"2026-02", tags:[] },
+  { bvid:"BV1Tg4y1G7kG", title:"01: 人生的第一份简历", cover:"http://i0.hdslb.com/bfs/archive/164a5945077c019e5101671b57b78c6aba972a00.jpg", url:"https://www.bilibili.com/video/BV1Tg4y1G7kG/", date:"2023-03", tags:[] },
+  { bvid:"BV12L411U7H7", title:"02: 嘿，一起来创建我的「个性标签」！", cover:"http://i1.hdslb.com/bfs/archive/a7fbe12c23432f17e100065948326cd5e9e5fbdf.jpg", url:"https://www.bilibili.com/video/BV12L411U7H7/", date:"2023-04", tags:[] },
+  { bvid:"BV1r54y1F7Mi", title:"03: 公式照拍摄现场花絮", cover:"http://i1.hdslb.com/bfs/archive/ce74b07c1e3d782648d90b2f4e0613fb4a8ea0dc.jpg", url:"https://www.bilibili.com/video/BV1r54y1F7Mi/", date:"2023-04", tags:[] },
+  { bvid:"BV1DT411n7XP", title:"04: 今天是去看演唱会的日子！", cover:"http://i1.hdslb.com/bfs/archive/ce74b07c1e3d782648d90b2f4e0613fb4a8ea0dc.jpg", url:"https://www.bilibili.com/video/BV1DT411n7XP/", date:"2023-04", tags:[] },
+  { bvid:"BV1Km4y1C7n6", title:"05: 春结野营会之「春结晚会」", cover:"http://i1.hdslb.com/bfs/archive/e51f2446239d15caec67fcb9b0f15382661d21c7.jpg", url:"https://www.bilibili.com/video/BV1Km4y1C7n6/", date:"2023-04", tags:[] },
+  { bvid:"BV1hc411N77w", title:"06: 春结野营会之难忘的春游", cover:"http://i2.hdslb.com/bfs/archive/15659739a12f2937acaa5699c03f712595c0a0ec.jpg", url:"https://www.bilibili.com/video/BV1hc411N77w/", date:"2023-05", tags:[] },
+  { bvid:"BV1fu411s7cW", title:"07: TFBA篮球赛", cover:"http://i0.hdslb.com/bfs/archive/46f33c629ddbc4edf6c68f83e6636da62aad46ac.jpg", url:"https://www.bilibili.com/video/BV1fu411s7cW/", date:"2023-05", tags:[] },
+  { bvid:"BV1cu411s7tX", title:"07: 同学，可以和你做同桌吗？", cover:"http://i0.hdslb.com/bfs/archive/eec7acc4f67372d8bb1a706ef81cfede9be2435a.jpg", url:"https://www.bilibili.com/video/BV1cu411s7tX/", date:"2023-05", tags:[] },
+  { bvid:"BV1PV4y1U7Xt", title:"08: 儿童带儿童过儿童节", cover:"http://i2.hdslb.com/bfs/archive/d3cfa0d79e916e12403a26e76450fc1f41040424.jpg", url:"https://www.bilibili.com/video/BV1PV4y1U7Xt/", date:"2023-06", tags:[] },
+  { bvid:"BV16W4y1S7QS", title:"09: 一个惬意的午后", cover:"http://i1.hdslb.com/bfs/archive/7404fe360ed9f6b755070fdbda4f5c78200e0168.jpg", url:"https://www.bilibili.com/video/BV16W4y1S7QS/", date:"2023-06", tags:[] },
+  { bvid:"BV1iL411i7MR", title:"09: 幼儿园一日助教体验", cover:"http://i1.hdslb.com/bfs/archive/1f8457af58e39df497f0c960d11f91ca21d5e071.jpg", url:"https://www.bilibili.com/video/BV1iL411i7MR/", date:"2023-06", tags:[] },
+  { bvid:"BV1mo4y1N7SX", title:"10: 谁是“伪装者”？", cover:"http://i1.hdslb.com/bfs/archive/865417e5ff8583b7e7dfe7d05f131de37e23a31b.jpg", url:"https://www.bilibili.com/video/BV1mo4y1N7SX/", date:"2023-06", tags:[] },
+  { bvid:"BV1Nc411u7iB", title:"11: 端午节特辑", cover:"http://i0.hdslb.com/bfs/archive/978447ae5aa43636beb30b5958603e2772eef3aa.jpg", url:"https://www.bilibili.com/video/BV1Nc411u7iB/", date:"2023-06", tags:[] },
+  { bvid:"BV1Eu411j7mp", title:"12: 绿色暴汗之旅", cover:"http://i2.hdslb.com/bfs/archive/91ff722dce108d918192d5facab2e3cdb8edb90a.jpg", url:"https://www.bilibili.com/video/BV1Eu411j7mp/", date:"2023-07", tags:[] },
+  { bvid:"BV1LW4y1Z74h", title:"13: 甜“秘密”的任务", cover:"http://i2.hdslb.com/bfs/archive/563433b6fac101dcac72b136ff5365d7258211f7.jpg", url:"https://www.bilibili.com/video/BV1LW4y1Z74h/", date:"2023-07", tags:[] },
+  { bvid:"BV1ZV4y147ph", title:"14: 清凉一\"吓\"之「消失的他」", cover:"http://i1.hdslb.com/bfs/archive/815cc9f9aa9adff60a85768861f41b6fa50adefa.jpg", url:"https://www.bilibili.com/video/BV1ZV4y147ph/", date:"2023-07", tags:[] },
+  { bvid:"BV1Uj411B72U", title:"16: 我们去北京啦！", cover:"http://i1.hdslb.com/bfs/archive/8c071dcdb1864428add1451184b507a6deeaf51b.jpg", url:"https://www.bilibili.com/video/BV1Uj411B72U/", date:"2023-08", tags:[] },
+  { bvid:"BV1dp4y177A4", title:"17: 飞翔体验券", cover:"http://i0.hdslb.com/bfs/archive/951efe3644e63aafda1f3fd1692aaef0e427eda8.jpg", url:"https://www.bilibili.com/video/BV1dp4y177A4/", date:"2023-08", tags:[] },
+  { bvid:"BV1hP41187a3", title:"18: 合宿特辑——是and不是end（上）", cover:"http://i2.hdslb.com/bfs/archive/224bbd6d5a832d865e3aad8ded005bf4632f132b.jpg", url:"https://www.bilibili.com/video/BV1hP41187a3/", date:"2023-09", tags:[] },
+  { bvid:"BV1bk4y1w736", title:"19: 合宿特辑——是and不是end（下）", cover:"http://i1.hdslb.com/bfs/archive/c4734b8bcfba1e1cf86e2c01d7afed715e39031d.jpg", url:"https://www.bilibili.com/video/BV1bk4y1w736/", date:"2023-09", tags:[] },
+  { bvid:"BV1vw411v7db", title:"20: oooooo的你", cover:"http://i1.hdslb.com/bfs/archive/f92fb0c7b01bce58d36005dd08b493f5e7830535.jpg", url:"https://www.bilibili.com/video/BV1vw411v7db/", date:"2023-09", tags:[] },
+  { bvid:"BV1Lp4y1c7ag", title:"21: 南国客栈诡事录（上）", cover:"http://i1.hdslb.com/bfs/archive/08591301873e17648a7f9076beec9a114c0b34ad.jpg", url:"https://www.bilibili.com/video/BV1Lp4y1c7ag/", date:"2023-09", tags:[] },
+  { bvid:"BV1YG411m7M3", title:"22: 南国客栈诡事录（下）", cover:"http://i2.hdslb.com/bfs/archive/4ef409950be36833ee802962751c5b513d1d57e4.jpg", url:"https://www.bilibili.com/video/BV1YG411m7M3/", date:"2023-10", tags:[] },
+  { bvid:"BV1Pw41167hv", title:"23: 间谍游戏", cover:"http://i1.hdslb.com/bfs/archive/40044be29604056b6f563532b413563ecc3a3652.jpg", url:"https://www.bilibili.com/video/BV1Pw41167hv/", date:"2023-10", tags:[] },
+  { bvid:"BV1Bw411B7Zf", title:"24: 突破极限的柔韧竞赛", cover:"http://i2.hdslb.com/bfs/archive/bf5b08e21923c0d8cfb8622265aba1b799aa35b7.jpg", url:"https://www.bilibili.com/video/BV1Bw411B7Zf/", date:"2023-10", tags:[] },
+  { bvid:"BV1VG411C7ux", title:"25: 秋结野营会（上）", cover:"http://i1.hdslb.com/bfs/archive/f349d067d405edde17d6e544ec74f7113adef051.jpg", url:"https://www.bilibili.com/video/BV1VG411C7ux/", date:"2023-10", tags:[] },
+  { bvid:"BV1Mu4y177Jn", title:"26: 秋结野营会（下）", cover:"http://i0.hdslb.com/bfs/archive/170c591b426ebf6c743cbbaa8de629578234f607.jpg", url:"https://www.bilibili.com/video/BV1Mu4y177Jn/", date:"2023-11", tags:[] },
+  { bvid:"BV17u4y1N79D", title:"27: 爱的抱抱", cover:"http://i2.hdslb.com/bfs/archive/ad37f4331c95c43c9408224e0614f30792169f15.jpg", url:"https://www.bilibili.com/video/BV17u4y1N79D/", date:"2023-11", tags:[] },
+  { bvid:"BV1jw411K7dB", title:"28: 决战吧！反射神经", cover:"http://i0.hdslb.com/bfs/archive/778a090dd86255b17b5acde852b246943a4bf143.jpg", url:"https://www.bilibili.com/video/BV1jw411K7dB/", date:"2023-11", tags:[] },
+  { bvid:"BV1Yj411j7YS", title:"29: 冬日养生大作战", cover:"http://i0.hdslb.com/bfs/archive/53da94518a9eeda061b4f406ecacfb148e1239fb.jpg", url:"https://www.bilibili.com/video/BV1Yj411j7YS/", date:"2023-12", tags:[] },
+  { bvid:"BV1Qb4y1G79n", title:"30: 下浩里美食地图（上）", cover:"http://i0.hdslb.com/bfs/archive/3283d68dda66f8b38f8014c1e0c7dd248323eba2.jpg", url:"https://www.bilibili.com/video/BV1Qb4y1G79n/", date:"2023-12", tags:[] },
+  { bvid:"BV1nQ4y137R6", title:"31: 下浩里美食地图（中）", cover:"http://i1.hdslb.com/bfs/archive/5ea6d57a66dcafa7548f8eee6c7c88c472ceb048.jpg", url:"https://www.bilibili.com/video/BV1nQ4y137R6/", date:"2023-12", tags:[] },
+  { bvid:"BV1Mg4y1r73p", title:"32: 下浩里美食地图（下）", cover:"http://i0.hdslb.com/bfs/archive/c681230d7ca7fa82ff70efb137769a0f05c00b3e.jpg", url:"https://www.bilibili.com/video/BV1Mg4y1r73p/", date:"2023-12", tags:[] },
+  { bvid:"BV1ig4y1U7TY", title:"33: 游乐园竞赛", cover:"http://i0.hdslb.com/bfs/archive/ef269627a377380dbb3b09d5a951906652b27bd9.jpg", url:"https://www.bilibili.com/video/BV1ig4y1U7TY/", date:"2024-01", tags:[] },
+  { bvid:"BV1oz421R7k4", title:"34: 新春茶话会（上）", cover:"http://i2.hdslb.com/bfs/archive/d2d292806f912d866d62ef7f55cffbcb1dd8e2c8.jpg", url:"https://www.bilibili.com/video/BV1oz421R7k4/", date:"2024-02", tags:[] },
+  { bvid:"BV1Qu4m1P7Wx", title:"35: ️是谁抢走了我的麦克风", cover:"http://i2.hdslb.com/bfs/archive/d2d292806f912d866d62ef7f55cffbcb1dd8e2c8.jpg", url:"https://www.bilibili.com/video/BV1Qu4m1P7Wx/", date:"2024-02", tags:[] },
+  { bvid:"BV1cz421d7K9", title:"35: 新春茶话会（下）", cover:"http://i2.hdslb.com/bfs/archive/d2d292806f912d866d62ef7f55cffbcb1dd8e2c8.jpg", url:"https://www.bilibili.com/video/BV1cz421d7K9/", date:"2024-02", tags:[] },
+  { bvid:"BV1hF4m1M7ZT", title:"36: 睡衣派对", cover:"http://i2.hdslb.com/bfs/archive/d7568d77e2947df939de7a24857f2898efe835d0.jpg", url:"https://www.bilibili.com/video/BV1hF4m1M7ZT/", date:"2024-02", tags:[] },
+  { bvid:"BV1kC411b7Ub", title:"37: 我眼中的他", cover:"http://i0.hdslb.com/bfs/archive/c62a999bfdafad8bd5e85f398d64936a37796c55.jpg", url:"https://www.bilibili.com/video/BV1kC411b7Ub/", date:"2024-03", tags:[] },
+  { bvid:"BV17j421d7LV", title:"38: 「嘻游记」进村第一天", cover:"http://i1.hdslb.com/bfs/archive/38a249a3827ca5d9a61dc315ea21687d80a25e78.jpg", url:"https://www.bilibili.com/video/BV17j421d7LV/", date:"2024-03", tags:[] },
+  { bvid:"BV1Mq421P7xZ", title:"39: 「嘻游记」今天晚上不睡觉", cover:"http://i0.hdslb.com/bfs/archive/21c5630b30f2d11e6060d3c9744806255a8861b0.jpg", url:"https://www.bilibili.com/video/BV1Mq421P7xZ/", date:"2024-03", tags:[] },
+  { bvid:"BV1hx4y1Y7Xt", title:"40: 「嘻游记」小鸡小鱼小猪和小莓", cover:"http://i2.hdslb.com/bfs/archive/ad192442df43a493ed5ad53fb647fbe9ff6f9bc2.jpg", url:"https://www.bilibili.com/video/BV1hx4y1Y7Xt/", date:"2024-04", tags:[] },
+  { bvid:"BV1Lp421R7TU", title:"41: 「嘻游记」噼里啪啦 噼里啪啦", cover:"http://i2.hdslb.com/bfs/archive/1072b412ad921a2bca7d0289499b4a516ce3f470.jpg", url:"https://www.bilibili.com/video/BV1Lp421R7TU/", date:"2024-04", tags:[] },
+  { bvid:"BV1VD421J7zq", title:"42: 「嘻游记」挖一条时空隧道", cover:"http://i2.hdslb.com/bfs/archive/cbad28610774dc7bac366540e62ebcb0c15976c8.jpg", url:"https://www.bilibili.com/video/BV1VD421J7zq/", date:"2024-04", tags:[] },
+  { bvid:"BV1az421D73v", title:"43: 最受欢迎的你（上）", cover:"http://i2.hdslb.com/bfs/archive/6978010a80bfbbb9818c4229db3d95f94562f832.jpg", url:"https://www.bilibili.com/video/BV1az421D73v/", date:"2024-05", tags:[] },
+  { bvid:"BV17M4m1o7BG", title:"44: 最受欢迎的你（下）", cover:"http://i0.hdslb.com/bfs/archive/a98ba4469eed560a8a397d318d6a5a4e481ec1b0.jpg", url:"https://www.bilibili.com/video/BV17M4m1o7BG/", date:"2024-05", tags:[] },
+  { bvid:"BV1nw4m1D72Z", title:"45: 去见师兄啦！", cover:"http://i2.hdslb.com/bfs/archive/7c4f58f989ec07a54b21c11f4f77227591ef283a.jpg", url:"https://www.bilibili.com/video/BV1nw4m1D72Z/", date:"2024-05", tags:[] },
+  { bvid:"BV1cn4y197Kj", title:"46: 六一儿童汇演（上）", cover:"http://i0.hdslb.com/bfs/archive/b69afd069432a7799e61e4e2e60c98c0e9b7e063.jpg", url:"https://www.bilibili.com/video/BV1cn4y197Kj/", date:"2024-06", tags:[] },
+  { bvid:"BV1u142117JB", title:"47: 六一儿童汇演（下）", cover:"http://i0.hdslb.com/bfs/archive/b69afd069432a7799e61e4e2e60c98c0e9b7e063.jpg", url:"https://www.bilibili.com/video/BV1u142117JB/", date:"2024-06", tags:[] },
+  { bvid:"BV1SZ421u7d5", title:"48: 吵吵闹闹大挑战", cover:"http://i2.hdslb.com/bfs/archive/6643b18733f77ed0fd6c7d5ed533f8ea27c05850.jpg", url:"https://www.bilibili.com/video/BV1SZ421u7d5/", date:"2024-06", tags:[] },
+  { bvid:"BV1jf421Q7W1", title:"50: 穿越时空长廊（上）", cover:"http://i1.hdslb.com/bfs/archive/ab2e472a9380fb93a7d97d0e48462d7d1225291c.jpg", url:"https://www.bilibili.com/video/BV1jf421Q7W1/", date:"2024-06", tags:[] },
+  { bvid:"BV1k4421D7MK", title:"51: 穿越时空长廊（下）", cover:"http://i0.hdslb.com/bfs/archive/a33f9e70420412c4d9930b10c93d8d9c9ba0e648.jpg", url:"https://www.bilibili.com/video/BV1k4421D7MK/", date:"2024-07", tags:[] },
+  { bvid:"BV1im421G7mL", title:"52: 富翁囧囧囧", cover:"http://i1.hdslb.com/bfs/archive/a3167b999d2f4d238a7602d2d796965f16bb6fda.jpg", url:"https://www.bilibili.com/video/BV1im421G7mL/", date:"2024-07", tags:[] },
+  { bvid:"BV12E4m1R7q5", title:"53: 就问你服（福）不服（福）", cover:"http://i1.hdslb.com/bfs/archive/aca7f96d85f0831ea54a933f971c1b5b8545c42d.jpg", url:"https://www.bilibili.com/video/BV12E4m1R7q5/", date:"2024-07", tags:[] },
+  { bvid:"BV1W142187Np", title:"54: 澳门！我们来啦！", cover:"http://i1.hdslb.com/bfs/archive/1cdb92b2ce6fe9d11ba825fd037c6e97a204b5e2.jpg", url:"https://www.bilibili.com/video/BV1W142187Np/", date:"2024-07", tags:[] },
+  { bvid:"BV1j142187V2", title:"55: 「修渔期」先导片——神级转场", cover:"http://i2.hdslb.com/bfs/archive/8f9685e5aaab7904cf56b8532f45552a24f6f3c8.jpg", url:"https://www.bilibili.com/video/BV1j142187V2/", date:"2024-08", tags:[] },
+  { bvid:"BV1Ff421i7dA", title:"56: 「修渔期」EP01——村里来了群中小学生", cover:"http://i2.hdslb.com/bfs/archive/0c29ec727bd06e38f02d36355a18d16d93385a4f.jpg", url:"https://www.bilibili.com/video/BV1Ff421i7dA/", date:"2024-08", tags:[] },
+  { bvid:"BV1dr421M7cD", title:"57: 「修渔期」EP02——新地图探索度？%", cover:"http://i1.hdslb.com/bfs/archive/9a18959370f9802cbd5231442fea7ce08e2a2869.jpg", url:"https://www.bilibili.com/video/BV1dr421M7cD/", date:"2024-08", tags:[] },
+  { bvid:"BV13b421E7Qu", title:"58: 「修渔期」EP03——突如其来的食材寻宝", cover:"http://i1.hdslb.com/bfs/archive/8c0d30e12f915359134ff48d1d7a48f4be852962.jpg", url:"https://www.bilibili.com/video/BV13b421E7Qu/", date:"2024-08", tags:[] },
+  { bvid:"BV16E421c7hb", title:"59: 「修渔期」EP04——渔业研修日", cover:"http://i0.hdslb.com/bfs/archive/6aa17887b70bcdf34a8a3608203718af8b827a4a.jpg", url:"https://www.bilibili.com/video/BV16E421c7hb/", date:"2024-08", tags:[] },
+  { bvid:"BV1eQH9eWEPG", title:"60: 「修渔期」EP05——泥潭大作战", cover:"http://i2.hdslb.com/bfs/archive/4164addbf1209d60dbaa074460d654b0ea596574.jpg", url:"https://www.bilibili.com/video/BV1eQH9eWEPG/", date:"2024-09", tags:[] },
+  { bvid:"BV1BL4bezEXN", title:"61: 「修渔期」EP06—— 一日店长之意想不到的客人", cover:"http://i0.hdslb.com/bfs/archive/88e6fb7c62a48d418912ade8ef56e12d4c6179e3.jpg", url:"https://www.bilibili.com/video/BV1BL4bezEXN/", date:"2024-09", tags:[] },
+  { bvid:"BV1hgteeGEzP", title:"62: 中秋特辑", cover:"http://i2.hdslb.com/bfs/archive/8a851693d3e43919d2a56231728fede1c9deea1f.jpg", url:"https://www.bilibili.com/video/BV1hgteeGEzP/", date:"2024-09", tags:[] },
+  { bvid:"BV1iwtfe9EJu", title:"63: 「修渔期」EP07—— 一日店长之意想不到的客人（下）", cover:"http://i2.hdslb.com/bfs/archive/a4def3791a8acc38f314523bbab5aba75c021011.jpg", url:"https://www.bilibili.com/video/BV1iwtfe9EJu/", date:"2024-09", tags:[] },
+  { bvid:"BV1WPxFehECF", title:"64: 「修渔期」EP08——即刻回家", cover:"http://i1.hdslb.com/bfs/archive/9e86cef394d28f9a1432f5536264a461dba38515.jpg", url:"https://www.bilibili.com/video/BV1WPxFehECF/", date:"2024-09", tags:[] },
+  { bvid:"BV1VHxrecE7F", title:"65: 「修渔期」花絮篇", cover:"http://i2.hdslb.com/bfs/archive/88256b904b36e5d80ee6f4be148310f166c62c4a.jpg", url:"https://www.bilibili.com/video/BV1VHxrecE7F/", date:"2024-09", tags:[] },
+  { bvid:"BV1dQ4FeHEVY", title:"66: 忙忙碌碌寻宝藏", cover:"http://i2.hdslb.com/bfs/archive/fe4a93d31fc272a58c21ce474e69193e3997bd51.jpg", url:"https://www.bilibili.com/video/BV1dQ4FeHEVY/", date:"2024-10", tags:[] },
+  { bvid:"BV1UP2mYBEAo", title:"67: 大快朵颐", cover:"http://i2.hdslb.com/bfs/archive/a5fdebaa7775e7bfeeb649b846379a964ac48650.jpg", url:"https://www.bilibili.com/video/BV1UP2mYBEAo/", date:"2024-10", tags:[] },
+  { bvid:"BV17FC2YkEmc", title:"68: Kampai!", cover:"http://i2.hdslb.com/bfs/archive/a5fdebaa7775e7bfeeb649b846379a964ac48650.jpg", url:"https://www.bilibili.com/video/BV17FC2YkEmc/", date:"2024-10", tags:[] },
+  { bvid:"BV1aNyDYmEyx", title:"69: 怎么不算city walk呢", cover:"http://i2.hdslb.com/bfs/archive/fe4a93d31fc272a58c21ce474e69193e3997bd51.jpg", url:"https://www.bilibili.com/video/BV1aNyDYmEyx/", date:"2024-10", tags:[] },
+  { bvid:"BV1KTSRYhE8C", title:"70: mini秋季运动会", cover:"http://i1.hdslb.com/bfs/archive/340c586047d51e21585b0762a3da3dd04bb0d385.jpg", url:"https://www.bilibili.com/video/BV1KTSRYhE8C/", date:"2024-11", tags:[] },
+  { bvid:"BV1KMiBYUELc", title:"75: 气吞山河之战", cover:"http://i2.hdslb.com/bfs/archive/1e5a15b63db12e315673f1e545dab158c464e65a.jpg", url:"https://www.bilibili.com/video/BV1KMiBYUELc/", date:"2024-12", tags:[] },
+  { bvid:"BV1bJBLYfEJz", title:"76: 新脑子转的就是快:", cover:"http://i0.hdslb.com/bfs/archive/e8d2b211bcc377781c72d785f91f88ab8da6a450.jpg", url:"https://www.bilibili.com/video/BV1bJBLYfEJz/", date:"2024-12", tags:[] },
+  { bvid:"BV1skCpYREdE", title:"78: 距离的神", cover:"http://i1.hdslb.com/bfs/archive/5c6a1e32b833a9fc25c9af8369da6974cf30eeee.jpg", url:"https://www.bilibili.com/video/BV1skCpYREdE/", date:"2024-12", tags:[] },
+  { bvid:"BV1hefHYKEDF", title:"79: 这个feel倍儿爽", cover:"http://i1.hdslb.com/bfs/archive/32bc0c56a5855c8f17250d26ba5058b29d93e525.jpg", url:"https://www.bilibili.com/video/BV1hefHYKEDF/", date:"2025-01", tags:[] },
+  { bvid:"BV1SDFoeNEgg", title:"80: 我这无人能敌的手气", cover:"http://i0.hdslb.com/bfs/archive/7e156db3d264e2f1ed50d55023fcbb01fb5096ed.jpg", url:"https://www.bilibili.com/video/BV1SDFoeNEgg/", date:"2025-02", tags:[] },
+  { bvid:"BV1pJKjedEF2", title:"81: 圆圆滚滚乐发财", cover:"http://i0.hdslb.com/bfs/archive/84f91d0d3684aa2488d54b5ff35e14df5a35f75f.jpg", url:"https://www.bilibili.com/video/BV1pJKjedEF2/", date:"2025-02", tags:[] },
+  { bvid:"BV1hXAoeyETm", title:"82: 谁是三寸不烂之舌", cover:"http://i1.hdslb.com/bfs/archive/6e3e3de48e870e5ad3b0f9d47e4deff6b0115c2d.jpg", url:"https://www.bilibili.com/video/BV1hXAoeyETm/", date:"2025-02", tags:[] },
+  { bvid:"BV1Rp9uY4ExU", title:"83: 热火朝天的冬季集训（1）", cover:"http://i2.hdslb.com/bfs/archive/f61453580a17573a85319210069510e0849bdc10.jpg", url:"https://www.bilibili.com/video/BV1Rp9uY4ExU/", date:"2025-02", tags:[] },
+  { bvid:"BV1cV91YgEiL", title:"84: 热火朝天的冬季集训（2）", cover:"http://i2.hdslb.com/bfs/archive/f54fe594e7afd8923bb91dd202b3a29381f469bf.jpg", url:"https://www.bilibili.com/video/BV1cV91YgEiL/", date:"2025-03", tags:[] },
+  { bvid:"BV1uQQzYAE2z", title:"85: 热火朝天的冬季集训（3）", cover:"http://i1.hdslb.com/bfs/archive/8a47c712ea63cb2caed8b674f98b0684ee04b0f0.jpg", url:"https://www.bilibili.com/video/BV1uQQzYAE2z/", date:"2025-03", tags:[] },
+  { bvid:"BV15RXkYDEyf", title:"86: 热火朝天的冬季集训（4）", cover:"http://i0.hdslb.com/bfs/archive/bb7b31214dcb636a508c20b1fc70aa3d19493ceb.jpg", url:"https://www.bilibili.com/video/BV15RXkYDEyf/", date:"2025-03", tags:[] },
+  { bvid:"BV16WZ9YuEXi", title:"89: 甜度爆表", cover:"http://i2.hdslb.com/bfs/archive/bd85becf855c93731c0bc21c686dbb7bd12c2ee1.jpg", url:"https://www.bilibili.com/video/BV16WZ9YuEXi/", date:"2025-04", tags:[] },
+  { bvid:"BV1Y6EtzeEXo", title:"95: 瞧我的小嘴巴", cover:"http://i1.hdslb.com/bfs/archive/58b5eaabddb4606c80ef7332b5cc282f58880f51.jpg", url:"https://www.bilibili.com/video/BV1Y6EtzeEXo/", date:"2025-05", tags:[] },
+  { bvid:"BV1HzTuzAEqC", title:"98: 无间道", cover:"http://i2.hdslb.com/bfs/archive/f74dd41c487f5b4f188556414c60aebcc6ad163c.jpg", url:"https://www.bilibili.com/video/BV1HzTuzAEqC/", date:"2025-06", tags:[] },
+  { bvid:"BV167Hkz4ELh", title:"102: 神奇的猜丁壳", cover:"http://i0.hdslb.com/bfs/archive/014110698f64d0573937afabef0134726b172b39.jpg", url:"https://www.bilibili.com/video/BV167Hkz4ELh/", date:"2025-09", tags:[] },
+  { bvid:"BV1UcW3zREpy", title:"103: 人生就是冲刺", cover:"http://i0.hdslb.com/bfs/archive/89f75001e0478a94bf966dcd0496290e543e5518.jpg", url:"https://www.bilibili.com/video/BV1UcW3zREpy/", date:"2025-09", tags:[] },
+  { bvid:"BV1mAnVznEnQ", title:"104: 命运的巅峰对决", cover:"http://i0.hdslb.com/bfs/archive/8699338d8ca99c605c7e8fcb2a6215b75b548f00.jpg", url:"https://www.bilibili.com/video/BV1mAnVznEnQ/", date:"2025-09", tags:[] },
+  { bvid:"BV1BgHVzzEHm", title:"105: 卡丁车接力赛", cover:"http://i0.hdslb.com/bfs/archive/11f60140e2cfb6e3207fa5b1564ea6c35eb550dd.jpg", url:"https://www.bilibili.com/video/BV1BgHVzzEHm/", date:"2025-10", tags:[] },
+  { bvid:"BV19hWCzWEJj", title:"106: “海龟”不是“这个汤”", cover:"http://i0.hdslb.com/bfs/archive/30836e9bff6a353a31f83da3811671357ef026c1.jpg", url:"https://www.bilibili.com/video/BV19hWCzWEJj/", date:"2025-10", tags:[] },
+  { bvid:"BV1xYsnzmEV3", title:"107: 离谱马拉松大赛", cover:"http://i2.hdslb.com/bfs/archive/67ddfc9df44a0a0a29b10b533f525be02a1d2d11.jpg", url:"https://www.bilibili.com/video/BV1xYsnzmEV3/", date:"2025-10", tags:[] },
+  { bvid:"BV1os1KBbEoL", title:"108: “阿巴阿巴”描述大会", cover:"http://i0.hdslb.com/bfs/archive/f5663d94f25501378422b419dc6b4efffa45ccbb.jpg", url:"https://www.bilibili.com/video/BV1os1KBbEoL/", date:"2025-10", tags:[] },
+  { bvid:"BV1qP23BGEaw", title:"109: 好想这样活一次", cover:"http://i2.hdslb.com/bfs/archive/c7bcaf0ab0dd3c93e9906a883013910c1700eb6e.jpg", url:"https://www.bilibili.com/video/BV1qP23BGEaw/", date:"2025-11", tags:[] },
+  { bvid:"BV1HACMBvETY", title:"110: 鸭力不山大", cover:"http://i1.hdslb.com/bfs/archive/eeb8152af26f954dfc1b21bfddfb5c9ae760cb17.jpg", url:"https://www.bilibili.com/video/BV1HACMBvETY/", date:"2025-11", tags:[] },
+  { bvid:"BV11YUjByEr5", title:"111: 你的尖叫我的梦", cover:"http://i2.hdslb.com/bfs/archive/cb319d125d293e05ef5355a80e00d10596bbcab3.jpg", url:"https://www.bilibili.com/video/BV11YUjByEr5/", date:"2025-11", tags:[] },
+  { bvid:"BV1vUSEBKEuM", title:"112: 虚无游戏世界", cover:"http://i2.hdslb.com/bfs/archive/fda0830dc9d2d407fea69863872a767b33cfdeb0.jpg", url:"https://www.bilibili.com/video/BV1vUSEBKEuM/", date:"2025-11", tags:[] },
+  { bvid:"BV1BAq9B6Ej3", title:"114: 今天不许好好唱", cover:"http://i1.hdslb.com/bfs/archive/4d150183de5100500020e77b87b5bc8b0beba924.jpg", url:"https://www.bilibili.com/video/BV1BAq9B6Ej3/", date:"2025-12", tags:[] },
+  { bvid:"BV1vtvQBZEf2", title:"115: 我们的“元”气值满了", cover:"http://i1.hdslb.com/bfs/archive/9b3dc3feb6d14590496fdfa3f82bc3af1c7fe3ad.jpg", url:"https://www.bilibili.com/video/BV1vtvQBZEf2/", date:"2026-01", tags:[] },
+  { bvid:"BV1vPiFB7Eap", title:"116: 神的主理人", cover:"http://i0.hdslb.com/bfs/archive/727266af41aa9e91a2eb5cdde7c9d29793063318.jpg", url:"https://www.bilibili.com/video/BV1vPiFB7Eap/", date:"2026-01", tags:[] },
+  { bvid:"BV1ztrKBXE6n", title:"117: 直觉无限公司", cover:"http://i1.hdslb.com/bfs/archive/3f56f9fdc2f1762f17428939479a47e811385d40.jpg", url:"https://www.bilibili.com/video/BV1ztrKBXE6n/", date:"2026-01", tags:[] },
+  { bvid:"BV1dFrkBmEDt", title:"118: 高雅人士局", cover:"http://i0.hdslb.com/bfs/archive/e836d0958d279ab65b608165adead27f29388365.jpg", url:"https://www.bilibili.com/video/BV1dFrkBmEDt/", date:"2026-01", tags:[] },
+  { bvid:"BV1hYzMBgEk5", title:"119: 纸上谈兵", cover:"http://i2.hdslb.com/bfs/archive/38c7361ee430a204e4e8dc2f2464b045f2f4bf45.jpg", url:"https://www.bilibili.com/video/BV1hYzMBgEk5/", date:"2026-01", tags:[] },
+  { bvid:"BV1VvZTBRELU", title:"122: 厨神争霸", cover:"http://i2.hdslb.com/bfs/archive/9894687d703b6974d01b94160cb230b0e8552212.jpg", url:"https://www.bilibili.com/video/BV1VvZTBRELU/", date:"2026-02", tags:[] },
+  { bvid:"BV1TXZrB3Eux", title:"123: 反差的LOVE", cover:"http://i0.hdslb.com/bfs/archive/060f8f04a0bb1cc695a0c9e31396d261311f33a0.jpg", url:"https://www.bilibili.com/video/BV1TXZrB3Eux/", date:"2026-02", tags:[] },
 ]
 
 const XINXING_DATA = [
-  { bvid:"BV16XnnzFEAk", title:"迷你纪录片《一颗好星星-可能》02", cover:"http://i0.hdslb.com/bfs/archive/9aa5d6308f532156e29d245222bcf8123946618d.jpg", url:"https://www.bilibili.com/video/BV16XnnzFEAk/", date:"2025-09", tags:[] },
-  { bvid:"BV1ZYpRzZEWp", title:"迷你纪录片《一颗好星星-扎根》01", cover:"http://i2.hdslb.com/bfs/archive/a8f14f0d1788ef6f801005614f09a69493e5f2f8.jpg", url:"https://www.bilibili.com/video/BV1ZYpRzZEWp/", date:"2025-09", tags:[] },
-  { bvid:"BV1LisdzYE6Y", title:"迷你纪录片《一颗好星星-千里目》06", cover:"http://i1.hdslb.com/bfs/archive/c6fa2c98dae035e8f32ea7baa2ab9e4602283b11.jpg", url:"https://www.bilibili.com/video/BV1LisdzYE6Y/", date:"2025-10", tags:[] },
-  { bvid:"BV1nU4AzhEbB", title:"迷你纪录片《一颗好星星-目标》04", cover:"http://i2.hdslb.com/bfs/archive/9a50d3ab5cfd4408b429de27e3d40052168dad3d.jpg", url:"https://www.bilibili.com/video/BV1nU4AzhEbB/", date:"2025-10", tags:[] },
-  { bvid:"BV1d9WxzyEis", title:"迷你纪录片《一颗好星星-我们》05", cover:"http://i1.hdslb.com/bfs/archive/8e1840d774164ae0d0815a1a19dbba8af75857c1.jpg", url:"https://www.bilibili.com/video/BV1d9WxzyEis/", date:"2025-10", tags:[] },
-  { bvid:"BV1MAxxzqEQo", title:"迷你纪录片《一颗好星星-感知》03", cover:"http://i0.hdslb.com/bfs/archive/74072b8d0b0863987ac2a758384a512516f20495.jpg", url:"https://www.bilibili.com/video/BV1MAxxzqEQo/", date:"2025-10", tags:[] },
-  { bvid:"BV1oHSKBKEWR", title:"迷你纪录片《一颗好星星-段落》11", cover:"http://i0.hdslb.com/bfs/archive/0a84258ca2680c23c0c7d55fec6ff2c12ca1cb29.jpg", url:"https://www.bilibili.com/video/BV1oHSKBKEWR/", date:"2025-11", tags:[] },
-  { bvid:"BV18q1LBGERG", title:"迷你纪录片《一颗好星星-回旋》07", cover:"http://i1.hdslb.com/bfs/archive/8c69363e36bee7a3e9cb895fe36cf003efe8f257.jpg", url:"https://www.bilibili.com/video/BV18q1LBGERG/", date:"2025-11", tags:[] },
-  { bvid:"BV1mU1QB6EUd", title:"迷你纪录片《一颗好星星-心象》08", cover:"http://i1.hdslb.com/bfs/archive/194f6cd30c5ba385d098fed13318d796af058531.jpg", url:"https://www.bilibili.com/video/BV1mU1QB6EUd/", date:"2025-11", tags:[] },
-  { bvid:"BV1F9CyBTEQp", title:"迷你纪录片《一颗好星星-勇》09", cover:"http://i2.hdslb.com/bfs/archive/e45954f3630f53949b83fbb04686fa9e9b71a5a4.jpg", url:"https://www.bilibili.com/video/BV1F9CyBTEQp/", date:"2025-11", tags:[] },
-  { bvid:"BV1mFUpBaE9R", title:"迷你纪录片《一颗好星星-将至》10", cover:"http://i2.hdslb.com/bfs/archive/af3e47a2bdf7e0376284efb83735603f76095420.jpg", url:"https://www.bilibili.com/video/BV1mFUpBaE9R/", date:"2025-11", tags:[] },
-  { bvid:"BV1e22XBREGg", title:"迷你纪录片《一颗好星星-闪光》12", cover:"http://i1.hdslb.com/bfs/archive/22b1175ada06bd9b2ac26b6c1d4bfe8d78ccbccf.jpg", url:"https://www.bilibili.com/video/BV1e22XBREGg/", date:"2025-12", tags:[] },
-  { bvid:"BV1M2mXBUEga", title:"迷你纪录片《一颗好星星-归渡》13", cover:"http://i0.hdslb.com/bfs/archive/d318b7e60fc2ce1008f3b0d936015df9ddc8c832.jpg", url:"https://www.bilibili.com/video/BV1M2mXBUEga/", date:"2025-12", tags:[] },
-  { bvid:"BV1ZwqkBrEi7", title:"迷你纪录片《一颗好星星-同频》14", cover:"http://i2.hdslb.com/bfs/archive/d13f8fd1ca55e1ec7615ec0c0e4583223275579f.jpg", url:"https://www.bilibili.com/video/BV1ZwqkBrEi7/", date:"2025-12", tags:[] },
-  { bvid:"BV1nhvqB8E6V", title:"迷你纪录片《一颗好星星-弦外》15", cover:"http://i0.hdslb.com/bfs/archive/8ca896efee85599c8ebcec3522dde1d667610d3d.jpg", url:"https://www.bilibili.com/video/BV1nhvqB8E6V/", date:"2025-12", tags:[] },
-  { bvid:"BV1CdiqBTERF", title:"迷你纪录片《一颗好星星-答案》16", cover:"http://i1.hdslb.com/bfs/archive/0b1f65ce9c3cc1cdb4b9bdf5160e602c90957eef.jpg", url:"https://www.bilibili.com/video/BV1CdiqBTERF/", date:"2026-01", tags:[] },
+  { bvid:"BV1ZYpRzZEWp", title:"01: 扎根", cover:"http://i2.hdslb.com/bfs/archive/a8f14f0d1788ef6f801005614f09a69493e5f2f8.jpg", url:"https://www.bilibili.com/video/BV1ZYpRzZEWp/", date:"2025-09", tags:[] },
+  { bvid:"BV16XnnzFEAk", title:"02: 可能", cover:"http://i0.hdslb.com/bfs/archive/9aa5d6308f532156e29d245222bcf8123946618d.jpg", url:"https://www.bilibili.com/video/BV16XnnzFEAk/", date:"2025-09", tags:[] },
+  { bvid:"BV1MAxxzqEQo", title:"03: 感知", cover:"http://i0.hdslb.com/bfs/archive/74072b8d0b0863987ac2a758384a512516f20495.jpg", url:"https://www.bilibili.com/video/BV1MAxxzqEQo/", date:"2025-10", tags:[] },
+  { bvid:"BV1nU4AzhEbB", title:"04: 目标", cover:"http://i2.hdslb.com/bfs/archive/9a50d3ab5cfd4408b429de27e3d40052168dad3d.jpg", url:"https://www.bilibili.com/video/BV1nU4AzhEbB/", date:"2025-10", tags:[] },
+  { bvid:"BV1d9WxzyEis", title:"05: 我们", cover:"http://i1.hdslb.com/bfs/archive/8e1840d774164ae0d0815a1a19dbba8af75857c1.jpg", url:"https://www.bilibili.com/video/BV1d9WxzyEis/", date:"2025-10", tags:[] },
+  { bvid:"BV1LisdzYE6Y", title:"06: 千里目", cover:"http://i1.hdslb.com/bfs/archive/c6fa2c98dae035e8f32ea7baa2ab9e4602283b11.jpg", url:"https://www.bilibili.com/video/BV1LisdzYE6Y/", date:"2025-10", tags:[] },
+  { bvid:"BV18q1LBGERG", title:"07: 回旋", cover:"http://i1.hdslb.com/bfs/archive/8c69363e36bee7a3e9cb895fe36cf003efe8f257.jpg", url:"https://www.bilibili.com/video/BV18q1LBGERG/", date:"2025-11", tags:[] },
+  { bvid:"BV1mU1QB6EUd", title:"08: 心象", cover:"http://i1.hdslb.com/bfs/archive/194f6cd30c5ba385d098fed13318d796af058531.jpg", url:"https://www.bilibili.com/video/BV1mU1QB6EUd/", date:"2025-11", tags:[] },
+  { bvid:"BV1F9CyBTEQp", title:"09: 勇", cover:"http://i2.hdslb.com/bfs/archive/e45954f3630f53949b83fbb04686fa9e9b71a5a4.jpg", url:"https://www.bilibili.com/video/BV1F9CyBTEQp/", date:"2025-11", tags:[] },
+  { bvid:"BV1mFUpBaE9R", title:"10: 将至", cover:"http://i2.hdslb.com/bfs/archive/af3e47a2bdf7e0376284efb83735603f76095420.jpg", url:"https://www.bilibili.com/video/BV1mFUpBaE9R/", date:"2025-11", tags:[] },
+  { bvid:"BV1oHSKBKEWR", title:"11: 段落", cover:"http://i0.hdslb.com/bfs/archive/0a84258ca2680c23c0c7d55fec6ff2c12ca1cb29.jpg", url:"https://www.bilibili.com/video/BV1oHSKBKEWR/", date:"2025-11", tags:[] },
+  { bvid:"BV1e22XBREGg", title:"12: 闪光", cover:"http://i1.hdslb.com/bfs/archive/22b1175ada06bd9b2ac26b6c1d4bfe8d78ccbccf.jpg", url:"https://www.bilibili.com/video/BV1e22XBREGg/", date:"2025-12", tags:[] },
+  { bvid:"BV1M2mXBUEga", title:"13: 归渡", cover:"http://i0.hdslb.com/bfs/archive/d318b7e60fc2ce1008f3b0d936015df9ddc8c832.jpg", url:"https://www.bilibili.com/video/BV1M2mXBUEga/", date:"2025-12", tags:[] },
+  { bvid:"BV1ZwqkBrEi7", title:"14: 同频", cover:"http://i2.hdslb.com/bfs/archive/d13f8fd1ca55e1ec7615ec0c0e4583223275579f.jpg", url:"https://www.bilibili.com/video/BV1ZwqkBrEi7/", date:"2025-12", tags:[] },
+  { bvid:"BV1nhvqB8E6V", title:"15: 弦外", cover:"http://i0.hdslb.com/bfs/archive/8ca896efee85599c8ebcec3522dde1d667610d3d.jpg", url:"https://www.bilibili.com/video/BV1nhvqB8E6V/", date:"2025-12", tags:[] },
+  { bvid:"BV1CdiqBTERF", title:"16: 答案", cover:"http://i1.hdslb.com/bfs/archive/0b1f65ce9c3cc1cdb4b9bdf5160e602c90957eef.jpg", url:"https://www.bilibili.com/video/BV1CdiqBTERF/", date:"2026-01", tags:[] },
 ]
 
 const PD_DATA = [
-  { bvid:"BV19H6oYxEeo", title:"《PD的蛋生》09：“生”乐大师", cover:"http://i0.hdslb.com/bfs/archive/4bc4994953550f21bfbfa48983af07030ba5c88d.jpg", url:"https://www.bilibili.com/video/BV19H6oYxEeo/", date:"2025-01", tags:[] },
-  { bvid:"BV1qpPRenEca", title:"《PD的蛋生》11：惩罚大赛", cover:"http://i2.hdslb.com/bfs/archive/7a879983dae3f389a6bf44ae88b0822fa1fb3560.jpg", url:"https://www.bilibili.com/video/BV1qpPRenEca/", date:"2025-02", tags:[] },
-  { bvid:"BV16bXsYyEm3", title:"《PD的蛋生》14：大馋小子萌", cover:"http://i0.hdslb.com/bfs/archive/95c2263d67c01d2815bcbec9ff4cfd3b0d9fad19.jpg", url:"https://www.bilibili.com/video/BV16bXsYyEm3/", date:"2025-03", tags:[] },
-  { bvid:"BV16F7Tz7EhQ", title:"《PD的蛋生》23：大橘为重", cover:"http://i0.hdslb.com/bfs/archive/45907daa7e0c9ccbf6c548d067d7049d6d22db51.jpg", url:"https://www.bilibili.com/video/BV16F7Tz7EhQ/", date:"2025-05", tags:[] },
-  { bvid:"BV1ga3JzpEi1", title:"《PD的蛋生》24：蛋生有手艺", cover:"http://i1.hdslb.com/bfs/archive/54667d65eccc8361ea5dcad4eea402a77c26d952.jpg", url:"https://www.bilibili.com/video/BV1ga3JzpEi1/", date:"2025-07", tags:[] },
+  { bvid:"BV19H6oYxEeo", title:"09: “生”乐大师", cover:"http://i0.hdslb.com/bfs/archive/4bc4994953550f21bfbfa48983af07030ba5c88d.jpg", url:"https://www.bilibili.com/video/BV19H6oYxEeo/", date:"2025-01", tags:[] },
+  { bvid:"BV1qpPRenEca", title:"11: 惩罚大赛", cover:"http://i2.hdslb.com/bfs/archive/7a879983dae3f389a6bf44ae88b0822fa1fb3560.jpg", url:"https://www.bilibili.com/video/BV1qpPRenEca/", date:"2025-02", tags:[] },
+  { bvid:"BV16bXsYyEm3", title:"14: 大馋小子萌", cover:"http://i0.hdslb.com/bfs/archive/95c2263d67c01d2815bcbec9ff4cfd3b0d9fad19.jpg", url:"https://www.bilibili.com/video/BV16bXsYyEm3/", date:"2025-03", tags:[] },
+  { bvid:"BV16F7Tz7EhQ", title:"23: 大橘为重", cover:"http://i0.hdslb.com/bfs/archive/45907daa7e0c9ccbf6c548d067d7049d6d22db51.jpg", url:"https://www.bilibili.com/video/BV16F7Tz7EhQ/", date:"2025-05", tags:[] },
+  { bvid:"BV1ga3JzpEi1", title:"24: 蛋生有手艺", cover:"http://i1.hdslb.com/bfs/archive/54667d65eccc8361ea5dcad4eea402a77c26d952.jpg", url:"https://www.bilibili.com/video/BV1ga3JzpEi1/", date:"2025-07", tags:[] },
 ]
 
 const SIYI_DATA = [
-  { bvid:"BV17tZDBJEEf", title:"《四一有意思》01：新春夜旅", cover:"http://i2.hdslb.com/bfs/archive/ca11c6b316b3da3a3f8574eac3d2855906812fe1.jpg", url:"https://www.bilibili.com/video/BV17tZDBJEEf/", date:"2026-02", tags:[] },
-  { bvid:"BV1apAEzcEA7", title:"《四一有意思》02：白日研究所", cover:"http://i1.hdslb.com/bfs/archive/e1cb1ae7fbc4c164b14d8fedab836c59008847e3.jpg", url:"https://www.bilibili.com/video/BV1apAEzcEA7/", date:"2026-03", tags:[] },
-  { bvid:"BV1hDXAB8EQG", title:"《四一有意思》03：星光收集员", cover:"http://i1.hdslb.com/bfs/archive/e1cb1ae7fbc4c164b14d8fedab836c59008847e3.jpg", url:"https://www.bilibili.com/video/BV1hDXAB8EQG/", date:"2026-03", tags:[] },
-  { bvid:"BV17C9oBZE3j", title:"《四一有意思》04:误闯天家", cover:"http://i0.hdslb.com/bfs/archive/c377b9282d7beffa23029588e7340573437f9ac1.jpg", url:"https://www.bilibili.com/video/BV17C9oBZE3j/", date:"2026-05", tags:[] },
-  { bvid:"BV1BsRXBEEGi", title:"《四一有意思》05:您有新的隐藏任务", cover:"http://i0.hdslb.com/bfs/archive/03466d733ed8d02a032b260ba4b41b405fa52979.jpg", url:"https://www.bilibili.com/video/BV1BsRXBEEGi/", date:"2026-05", tags:[] },
-  { bvid:"BV1nk5r6dE5y", title:"《四一有意思》06:做完你的做你的", cover:"http://i0.hdslb.com/bfs/archive/19aa1d52c37d588b0f7422659ce2d8e3be9aafca.jpg", url:"https://www.bilibili.com/video/BV1nk5r6dE5y/", date:"2026-05", tags:[] },
-  { bvid:"BV1i4Gq6YE35", title:"《四一有意思》07:福如大海", cover:"http://i1.hdslb.com/bfs/archive/5edc522711a84659e0fa75af8ec6d961e651af7e.jpg", url:"https://www.bilibili.com/video/BV1i4Gq6YE35/", date:"2026-05", tags:[] },
+  { bvid:"BV17tZDBJEEf", title:"01: 新春夜旅", cover:"http://i2.hdslb.com/bfs/archive/ca11c6b316b3da3a3f8574eac3d2855906812fe1.jpg", url:"https://www.bilibili.com/video/BV17tZDBJEEf/", date:"2026-02", tags:[] },
+  { bvid:"BV1apAEzcEA7", title:"02: 白日研究所", cover:"http://i1.hdslb.com/bfs/archive/e1cb1ae7fbc4c164b14d8fedab836c59008847e3.jpg", url:"https://www.bilibili.com/video/BV1apAEzcEA7/", date:"2026-03", tags:[] },
+  { bvid:"BV1hDXAB8EQG", title:"03: 星光收集员", cover:"http://i1.hdslb.com/bfs/archive/e1cb1ae7fbc4c164b14d8fedab836c59008847e3.jpg", url:"https://www.bilibili.com/video/BV1hDXAB8EQG/", date:"2026-03", tags:[] },
+  { bvid:"BV17C9oBZE3j", title:"04: 误闯天家", cover:"http://i0.hdslb.com/bfs/archive/c377b9282d7beffa23029588e7340573437f9ac1.jpg", url:"https://www.bilibili.com/video/BV17C9oBZE3j/", date:"2026-05", tags:[] },
+  { bvid:"BV1BsRXBEEGi", title:"05: 您有新的隐藏任务", cover:"http://i0.hdslb.com/bfs/archive/03466d733ed8d02a032b260ba4b41b405fa52979.jpg", url:"https://www.bilibili.com/video/BV1BsRXBEEGi/", date:"2026-05", tags:[] },
+  { bvid:"BV1nk5r6dE5y", title:"06: 做完你的做你的", cover:"http://i0.hdslb.com/bfs/archive/19aa1d52c37d588b0f7422659ce2d8e3be9aafca.jpg", url:"https://www.bilibili.com/video/BV1nk5r6dE5y/", date:"2026-05", tags:[] },
+  { bvid:"BV1i4Gq6YE35", title:"07: 福如大海", cover:"http://i1.hdslb.com/bfs/archive/5edc522711a84659e0fa75af8ec6d961e651af7e.jpg", url:"https://www.bilibili.com/video/BV1i4Gq6YE35/", date:"2026-05", tags:[] },
 ]
 
 function GrowthBiliTab({ data, label }) {
@@ -3420,35 +3498,32 @@ function GrowthBiliTab({ data, label }) {
 
   const byDate: Record<string,typeof data> = {}
   data.forEach(v=>{ if(!byDate[v.date]) byDate[v.date]=[]; byDate[v.date].push(v) })
-  const sortedDates = Object.keys(byDate).sort((a,b)=>b.localeCompare(a))
+  const sortedDates = Object.keys(byDate).sort((a,b)=>a.localeCompare(b))
   const displayed = activeMonth ? byDate[activeMonth]||[] : data
 
   return (
-    <div style={{display:"flex",gap:20}}>
-      <div style={{flex:1,minWidth:0}}>
-        {activeMonth&&(
-          <div style={{marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:12,fontWeight:700,color:"var(--c-accent)"}}>{activeMonth}</span>
-            <button onClick={()=>setActiveMonth(null)} style={{fontSize:11,padding:"2px 8px",borderRadius:100,cursor:"pointer",fontFamily:"inherit",border:"1px solid rgba(195,228,206,0.5)",background:"rgba(240,250,243,0.7)",color:"var(--c-muted)"}}>× 全部</button>
-          </div>
-        )}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
-          {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
-        </div>
+    <div>
+      {/* 月份横排筛选 */}
+      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14,flexWrap:"wrap"}}>
+        <button onClick={()=>setActiveMonth(null)} style={{
+          padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
+          border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
+          background:!activeMonth?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.5)",
+          color:!activeMonth?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
+        }}>全部 ({data.length})</button>
+        {sortedDates.map(date=>(
+          <button key={date} onClick={()=>setActiveMonth(date)} style={{
+            padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
+            border:`1px solid ${activeMonth===date?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
+            background:activeMonth===date?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.5)",
+            color:activeMonth===date?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
+          }}>{date} <span style={{fontSize:9,opacity:0.6}}>({byDate[date].length})</span></button>
+        ))}
       </div>
-      <div style={{flex:"0 0 auto",width:110}}>
-        <div style={{background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(195,228,206,0.45)",borderRadius:14,padding:"12px 10px",position:"sticky",top:20}}>
-          <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:10}}>📅 月份</div>
-          <div style={{display:"flex",flexDirection:"column",gap:4}}>
-            <button onClick={()=>setActiveMonth(null)} style={{padding:"5px 8px",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:600,textAlign:"left",border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.3)"}`,background:!activeMonth?"rgba(162,214,174,0.3)":"transparent",color:!activeMonth?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s"}}>全部 ({data.length})</button>
-            {sortedDates.map(date=>(
-              <button key={date} onClick={()=>setActiveMonth(date)} style={{padding:"5px 8px",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:600,textAlign:"left",border:`1px solid ${activeMonth===date?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.3)"}`,background:activeMonth===date?"rgba(162,214,174,0.3)":"transparent",color:activeMonth===date?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s"}}
-              onMouseEnter={e=>{ if(activeMonth!==date) e.currentTarget.style.background="rgba(162,214,174,0.1)" }}
-              onMouseLeave={e=>{ if(activeMonth!==date) e.currentTarget.style.background="transparent" }}
-              >{date} <span style={{fontSize:9,opacity:0.6}}>({byDate[date].length})</span></button>
-            ))}
-          </div>
-        </div>
+
+      {/* 视频网格 */}
+      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+        {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
   )
@@ -3458,11 +3533,11 @@ function GrowthBiliTab({ data, label }) {
 //  成长录 Section
 // ════════════════════════════════════════════
 function GrowthSection({ onLightbox }) {
-  const tabs = ["照片","视频","喵生日记","星期五练习生","一颗好星星","PD的蛋生","四一有意思"]
-  const [activeTab, setActiveTab] = useState("照片")
+  const tabs = ["星期五练习生","一颗好星星","PD的蛋生","四一有意思","喵生日记"]
+  const [activeTab, setActiveTab] = useState("星期五练习生")
 
   const tabLabel = (t) => {
-    const map = {"照片":"📸 照片","视频":"🎬 视频","喵生日记":"🐱 喵生日记","星期五练习生":"📅 星期五练习生","一颗好星星":"⭐ 一颗好星星","PD的蛋生":"🥚 PD的蛋生","四一有意思":"🎯 四一有意思"}
+    const map = {"星期五练习生":"📅 星期五练习生","一颗好星星":"⭐ 一颗好星星","PD的蛋生":"🥚 PD的蛋生","四一有意思":"🎯 四一有意思","喵生日记":"🐱 喵生日记"}
     return map[t] || t
   }
 
@@ -3476,7 +3551,7 @@ function GrowthSection({ onLightbox }) {
 
   return (
     <div>
-      <div style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
+      <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:20}}>
         {tabs.map(t=>(
           <button key={t} onClick={()=>setActiveTab(t)} style={{
             padding:"6px 16px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
@@ -3488,22 +3563,6 @@ function GrowthSection({ onLightbox }) {
           }}>{tabLabel(t)}</button>
         ))}
       </div>
-
-      {activeTab==="照片"&&(
-        <div style={{textAlign:"center",padding:"42px 0",color:"var(--c-faint)"}}>
-          <div style={{fontSize:36,marginBottom:10}}>📸</div>
-          <p style={{fontSize:13}}>成长照片放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/成长录/照片/</code> 下，读取方式与微博图集相同 ✨</p>
-          <p style={{fontSize:11.5,color:"var(--c-faint)",marginTop:8}}>上传文件夹后此板块将自动展示</p>
-        </div>
-      )}
-
-      {activeTab==="视频"&&(
-        <div style={{textAlign:"center",padding:"42px 0",color:"var(--c-faint)"}}>
-          <div style={{fontSize:36,marginBottom:10}}>🎬</div>
-          <p style={{fontSize:13}}>成长视频放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/成长录/视频/</code> 下 ✨</p>
-          <p style={{fontSize:11.5,color:"var(--c-faint)",marginTop:8}}>上传文件夹后此板块将自动展示</p>
-        </div>
-      )}
 
       {activeTab==="喵生日记"&&<MiaoDiary/>}
       {activeTab==="星期五练习生"&&<GrowthBiliTab data={XINGQI5_DATA} label="星期五练习生"/>}
@@ -3697,107 +3756,127 @@ function DouyinSection() {
 
 // 张建国喵生日记
 function MiaoDiary() {
-  // 虚拟数据，之后换真实图片
-  const youngPhotos = [
-    { url:"https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg", caption:"2022年冬 · 刚到家" },
-    { url:"https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg", caption:"2023年春 · 第一次晒太阳" },
-    { url:"https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg", caption:"2023年夏 · 最爱的纸箱" },
-  ]
-  const adultPhotos = [
-    { url:"https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg", caption:"2024年秋 · 已是爷爷风了" },
-    { url:"https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg", caption:"2025年春 · 依旧帅气" },
-  ]
-  const [lightbox, setLightbox] = useState<{src:string,label:string}|null>(null)
+  const [tab, setTab] = useState<"喵少"|"喵爷">("喵少")
+  const [lightbox, setLightbox] = useState<string|null>(null)
+
+  const BASE = "https://res.cloudinary.com/demfj39xl/image/upload"
+  const VBASE = "https://res.cloudinary.com/demfj39xl/video/upload"
+
+  const entries = {
+    喵少: [
+      {
+        date: "2024/03/21",
+        content: "给大家介绍一下我的新宠物😜他叫张建国～\n米努特矮脚弟弟🐱小名还没想好🤔建国很可爱哟！性格比较调皮😈我们一起记录他的成长吧😚🥳",
+        media: [{ type:"video", url:`${VBASE}/hanrui/public/zhangjiangguo/24-03-21.mp4` }],
+      },
+      {
+        date: "2024/09/23",
+        content: "😼大家都来看一下，今天满九个月的张建国吧！建国宝宝又成长了一些😼相信大家也发现它最近发腮了😹加油 我们一起长大😾！（提一嘴：这两张张建国都是在我教爸爸怎么打光的过程中顺便拍的！感觉还可以😹）",
+        media: [1,2,3].map(n=>({ type:"img", url:`${BASE}/hanrui/public/2024-09/2024-09-23_21-23-09_${n}.jpg` })),
+      },
+      {
+        date: "2024/12/23",
+        content: "你好，张建国。今天是你的一岁生日，作为哥哥的我很开心能见证你这一年来的成长。希望你以后每一天都平安快乐，哥哥和爸爸妈妈会永远陪伴你。（你听不懂人类语言，我就不多说了😹）那么，让我们一起正式的祝张建国生日快乐吧——HAPPY BIRTHDAY 生日快乐🎊🎊🎊🎂🎂🎂🐱🐱",
+        media: [1,2,3,4,5,6,7].map(n=>({ type:"img", url:`${BASE}/hanrui/public/2024-12/2024-12-23_21-26-12_${n}.jpg` })),
+      },
+    ],
+    喵爷: [
+      {
+        date: "2025/04/25",
+        content: "国咪新亮相！最近它瘦了，我们都挺担心的☹️一吃肉罐头就窜稀，简直\u201c脆皮肠\u201d😹最近国咪毛多惨了，拍完视频衣服都报废两件！🥲但是都不要说建国胖建国丑！我们建国只是青春期加上毛多而已！",
+        media: [{ type:"video", url:`${VBASE}/hanrui/public/zhangjiangguo/2025-04-25.mp4` }],
+      },
+      {
+        date: "2025/10/18",
+        content: "和小主人一起度过了小主人的16岁生日",
+        media: ["6","8","5","10"].map(n=>({ type:"img", url:`${BASE}/hanrui/public/2025-10/2025-10-18_10-18-29_${n}.jpg` })),
+      },
+    ],
+  }
 
   return (
     <>
-      {lightbox&&<Lightbox src={lightbox.src} label={lightbox.label} onClose={()=>setLightbox(null)}/>}
-      {/* 标题区 */}
-      <div style={{
-        textAlign:"center",padding:"20px 0 24px",
-        borderBottom:"1px solid rgba(195,228,206,0.4)",marginBottom:24,
-      }}>
-        {/* 猫咪贴图占位 */}
-        <div style={{
-          width:80,height:80,borderRadius:"50%",margin:"0 auto 12px",
-          background:"linear-gradient(135deg,rgba(255,220,180,0.6),rgba(255,190,140,0.5))",
-          border:"2px solid rgba(255,180,100,0.3)",
-          display:"flex",alignItems:"center",justifyContent:"center",
-          fontSize:44,boxShadow:"0 4px 16px rgba(255,150,80,0.15)",
-        }}>🐱</div>
-        <div style={{fontSize:16,fontWeight:800,color:"var(--c-ink)",letterSpacing:"-0.01em"}}>张建国的喵生日记</div>
-        <div style={{fontSize:12,color:"var(--c-muted)",marginTop:5,lineHeight:1.7}}>
-          这是张函瑞最爱的猫咪的成长回忆录 🐾<br/>
-          <span style={{fontSize:10,color:"var(--c-faint)"}}>* 猫咪大头照上传后会替换此处图标</span>
-        </div>
+      {lightbox&&<Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>}
+
+      {/* 标题 */}
+      <div style={{textAlign:"center",marginBottom:20}}>
+        <div style={{fontSize:28,marginBottom:6}}>🐱</div>
+        <div style={{fontSize:16,fontWeight:800,color:"var(--c-ink)"}}>张建国的喵生日记</div>
+        <div style={{fontSize:12,color:"var(--c-muted)",marginTop:4}}>记录一只米努特矮脚猫的成长 🐾</div>
       </div>
 
-      {/* 两栏：喵少 vs 喵爷 */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-        {/* 喵少 */}
-        <div>
-          <div style={{
-            display:"flex",alignItems:"center",gap:8,marginBottom:14,
-            padding:"8px 14px",
-            background:"rgba(255,220,160,0.18)",border:"1px solid rgba(255,190,80,0.25)",borderRadius:10,
-          }}>
-            <span style={{fontSize:18}}>🌱</span>
-            <div>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--c-ink)"}}>喵少</div>
-              <div style={{fontSize:10,color:"var(--c-muted)"}}>小时候的建国</div>
-            </div>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {youngPhotos.map((p,i)=>(
-              <div key={i} onClick={()=>setLightbox({src:p.url,label:p.caption})} style={{
-                borderRadius:10,overflow:"hidden",cursor:"pointer",
-                border:"1px solid rgba(195,228,206,0.5)",
-                transition:"transform 0.2s,box-shadow 0.2s",
-              }}
-              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 6px 18px rgba(40,100,56,0.14)"}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>
-                <img src={p.url} alt="" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
-                <div style={{padding:"5px 8px",fontSize:9.5,color:"var(--c-muted)",background:"rgba(240,250,243,0.7)"}}>{p.caption}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* 喵少/喵爷切换 */}
+      <div style={{display:"flex",gap:8,marginBottom:20,justifyContent:"center"}}>
+        {(["喵少","喵爷"] as const).map(t=>(
+          <button key={t} onClick={()=>setTab(t)} style={{
+            padding:"6px 22px",borderRadius:100,fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+            border:"1px solid",transition:"all 0.18s",
+            ...(tab===t
+              ?{background:"linear-gradient(135deg,rgba(255,200,120,0.5),rgba(255,170,80,0.4))",borderColor:"rgba(220,150,60,0.6)",color:"var(--c-ink)"}
+              :{background:"rgba(255,255,255,0.38)",borderColor:"rgba(195,228,206,0.5)",color:"var(--c-muted)"}
+            ),
+          }}>{t==="喵少"?"🐱 喵少":"👑 喵爷"}</button>
+        ))}
+      </div>
 
-        {/* 喵爷 */}
-        <div>
-          <div style={{
-            display:"flex",alignItems:"center",gap:8,marginBottom:14,
-            padding:"8px 14px",
-            background:"rgba(180,160,220,0.12)",border:"1px solid rgba(160,130,200,0.2)",borderRadius:10,
+      {/* 日记列表 */}
+      <div style={{display:"flex",flexDirection:"column",gap:20}}>
+        {entries[tab].map((entry,i)=>(
+          <div key={i} style={{
+            background:"rgba(255,255,255,0.55)",backdropFilter:"blur(10px)",
+            border:"1px solid rgba(195,228,206,0.5)",borderRadius:16,
+            overflow:"hidden",boxShadow:"0 2px 12px rgba(40,100,56,0.06)",
           }}>
-            <span style={{fontSize:18}}>👑</span>
-            <div>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--c-ink)"}}>喵爷</div>
-              <div style={{fontSize:10,color:"var(--c-muted)"}}>长大后的建国</div>
+            {/* 日记头部 */}
+            <div style={{
+              padding:"12px 16px",
+              background:"linear-gradient(135deg,rgba(255,240,200,0.4),rgba(255,220,150,0.25))",
+              borderBottom:"1px solid rgba(195,228,206,0.3)",
+              display:"flex",alignItems:"center",gap:10,
+            }}>
+              <div style={{fontSize:18}}>🐾</div>
+              <div>
+                <div style={{fontSize:11,fontWeight:700,color:"rgba(160,100,30,0.8)",letterSpacing:"0.05em"}}>{entry.date}</div>
+                <div style={{fontSize:10,color:"var(--c-muted)"}}>From建国的小主人</div>
+              </div>
+            </div>
+
+            {/* 正文 */}
+            <div style={{padding:"14px 16px"}}>
+              <div style={{fontSize:13,color:"var(--c-ink-2)",lineHeight:1.9,whiteSpace:"pre-line",marginBottom:entry.media.length?14:0}}>
+                {entry.content}
+              </div>
+
+              {/* 媒体 */}
+              {entry.media.length>0&&(
+                <div style={{
+                  display:"grid",
+                  gridTemplateColumns:entry.media.length===1?"1fr":`repeat(${Math.min(entry.media.length,3)},1fr)`,
+                  gap:6,
+                }}>
+                  {entry.media.map((m,j)=>(
+                    m.type==="video" ? (
+                      <video key={j} src={m.url} controls
+                        style={{width:"100%",borderRadius:10,border:"1px solid rgba(195,228,206,0.4)",display:"block",maxHeight:320,objectFit:"cover"}}
+                      />
+                    ) : (
+                      <div key={j} onClick={()=>setLightbox(m.url)} style={{
+                        borderRadius:10,overflow:"hidden",cursor:"pointer",
+                        border:"1px solid rgba(195,228,206,0.4)",
+                        aspectRatio:"1",
+                        transition:"transform 0.15s",
+                      }}
+                      onMouseEnter={e=>e.currentTarget.style.transform="scale(1.03)"}
+                      onMouseLeave={e=>e.currentTarget.style.transform=""}>
+                        <img src={m.url} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {adultPhotos.map((p,i)=>(
-              <div key={i} onClick={()=>setLightbox({src:p.url,label:p.caption})} style={{
-                borderRadius:10,overflow:"hidden",cursor:"pointer",
-                border:"1px solid rgba(195,228,206,0.5)",
-                transition:"transform 0.2s,box-shadow 0.2s",
-              }}
-              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 6px 18px rgba(40,100,56,0.14)"}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>
-                <img src={p.url} alt="" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
-                <div style={{padding:"5px 8px",fontSize:9.5,color:"var(--c-muted)",background:"rgba(240,250,243,0.7)"}}>{p.caption}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            marginTop:12,padding:"10px 14px",
-            background:"rgba(79,168,104,0.05)",border:"1px solid rgba(79,168,104,0.12)",
-            borderRadius:8,fontSize:11,color:"var(--c-muted)",lineHeight:1.7,textAlign:"center",
-          }}>
-            💡 图片为虚拟占位，上传真实照片后替换 youngPhotos / adultPhotos 数据即可
-          </div>
-        </div>
+        ))}
       </div>
     </>
   )
@@ -3808,19 +3887,44 @@ function MiaoDiary() {
 // ════════════════════════════════════════════
 const TRAVEL_DATA = [
   {
-    id:"beijing",
-    name:"北京",
-    lat:39.9, lng:116.4,
-    emoji:"🏯",
-    share:"「在北京的感觉真的很特别，故宫那天下午光线很好，一直拍一直拍 📸 颐和园的风好大，把我头发都吹乱了哈哈」",
-    shareDate:"2024-08",
-    climate:"北京四季分明。春秋（3-5月、9-11月）最宜游览，气温15-25°C。夏季炎热潮湿可达38°C，冬季寒冷干燥可至-10°C。建议春秋出发，备好防晒和薄外套。",
-    bestTime:"3-5月 / 9-11月",
-    tips:["故宫门票需提前预约，旺季请至少提前1周","颐和园傍晚时分光线最美，可看夕阳映湖","南锣鼓巷和烟袋斜街适合漫步和拍照","北京烤鸭推荐全聚德或大董，需提前订位"],
+    id:"quanzhou",
+    name:"泉州",
+    lat:24.87, lng:118.68,
+    emoji:"🎸",
+    share:"当了一天的驻唱 对自己来说是一种比较新奇的体验😹不过这一天忙忙碌碌的很充实，也过得很开心！希望能有更多的机会和大家再做这样的事，也许是经营一家店呢？哈哈，不管怎么样都很感谢大家对彼此的支持！😼",
+    shareDate:"2024-09",
+    climate:"泉州属亚热带海洋性季风气候，全年温暖湿润。春季（3-5月）多雨，夏季（6-9月）炎热有台风，秋季（10-11月）最为舒适，冬季（12-2月）温和少寒。",
+    bestTime:"10-11月 / 3-4月",
+    tips:["西街是泉州最古老的街道，开元寺必去","泉州小吃推荐面线糊、牛肉羹、海蛎煎","清源山可以俯瞰全城，老君岩石像很壮观","崇武古城海边风景绝美，适合拍日落","洛阳桥是中国第一座跨海石桥，历史悠久"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_1.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_2.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_3.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_4.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_5.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_6.jpg",
+    ]
+  },
+  {
+    id:"chengdu",
+    name:"成都",
+    lat:30.67, lng:104.07,
+    emoji:"🐼",
+    share:"一些在成都的moment～（有两张是在重庆拍的👍）我是用一个卡片机拍的，希望大家看了之后心情美丽～^_^",
+    shareDate:"2024-09",
+    climate:"成都属亚热带湿润气候，四季分明但少见阳光，有「蜀犬吠日」之说。春秋（3-5月、9-11月）最宜游览，气温15-25°C。夏季（6-8月）闷热潮湿，冬季阴冷少雪。",
+    bestTime:"3-5月 / 9-11月",
+    tips:["宽窄巷子适合下午漫步，避开周末高峰","大熊猫基地建议早上8点前入园，熊猫最活跃","成都小吃推荐钟水饺、龙抄手、赖汤圆","武侯祠和锦里可以连着逛，步行5分钟","太古里适合夜晚拍照，灯光效果超好"],
+    scenery:[
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_1.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_2.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_3.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_4.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_5.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_6.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_7.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_8.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_9.jpg",
     ]
   },
   {
@@ -3828,187 +3932,246 @@ const TRAVEL_DATA = [
     name:"重庆",
     lat:29.56, lng:106.55,
     emoji:"🌆",
-    share:"「重庆是我的家乡，每次回去都很开心。洪崖洞夜景真的绝，朋友们来重庆一定要来看看！」",
-    shareDate:"2024-02",
+    mapEmoji:"",
+    share:"这两天出去放松了一下🍃\n能量恢复中！🥹🥹😘",
+    shareDate:"2025-06",
     climate:"重庆是『雾都』，全年湿润多雨。夏季（6-8月）极热，可达40°C，需做好防晒。春秋（3-5月、9-10月）气候宜人是最佳游览时间。冬季阴冷但少见降雪。",
     bestTime:"3-5月 / 9-10月",
     tips:["洪崖洞傍晚18:00后灯光亮起最美","解放碑步行街是购物好去处","来重庆必吃正宗火锅和小面","磁器口古镇适合拍照，避开周末人流"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_1.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_2.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_3.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_4.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_5.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_6.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_7.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_8.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_9.jpg",
     ]
   },
   {
-    id:"shanghai",
-    name:"上海",
-    lat:31.23, lng:121.47,
-    emoji:"🌃",
-    share:"「外滩的夜景真的太漂亮了，站在浦东看浦西的灯光，感觉整个城市都在发光 ✨」",
-    shareDate:"2023-11",
-    climate:"上海属亚热带季风气候，四季分明。春秋（4-5月、10-11月）最舒适，气温在15-25°C之间。夏季（7-8月）高温潮湿，冬季（12-2月）阴冷湿润。",
-    bestTime:"4-5月 / 10-11月",
-    tips:["外滩夜景徒步是免费的，下午5点后开始变好看","迪士尼热门项目需提前在App预约","新天地和田子坊适合下午闲逛","上海本帮菜推荐南翔小笼包和本帮红烧肉"],
+    id:"haikou",
+    name:"海口",
+    lat:20.04, lng:110.32,
+    emoji:"🌴",
+    share:"请你看我的平行时空里的青春～😿 也许在另一个时空里 我可能真的会做摄影呢💭",
+    shareDate:"2026-04",
+    climate:"海口属热带季风气候，全年高温多雨。冬季（12-2月）是旅游旺季，气温20-26°C，凉爽舒适。夏季（6-9月）炎热潮湿，气温可达35°C以上，还有台风影响。春秋季节温热，雨水较多。",
+    bestTime:"11月-次年2月",
+    tips:["骑楼老街是必去的历史街区，适合下午拍照","海南粉和清补凉是当地必吃美食","假日海滩适合看日落，傍晚最美","五公祠历史悠久，了解海南文化必去","从海口坐高铁可以快速去三亚"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_8.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_3.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_6.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_7.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_1.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_2.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_4.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_5.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_9.jpg",
+    ]
+  },
+  {
+    id:"nanaodao",
+    name:"南澳岛",
+    lat:23.42, lng:117.02,
+    emoji:"🏝️",
+    share:"「说不出旅行的意义」🌊",
+    shareDate:"2025-08",
+    climate:"南澳岛属亚热带海洋性气候，全年温暖湿润。夏季（6-9月）气温25-33°C，海水温暖适合游泳，但需注意台风季。秋冬（10-3月）气候凉爽，海浪较大不适合下水，适合海边散步观景。",
+    bestTime:"4-6月 / 10-11月",
+    tips:["岛上交通建议租电动车，方便游览各个海滩","青澳湾沙滩细腻，是最受欢迎的游泳区","总兵府历史悠久，了解南澳岛历史必去","推荐尝试本地海鲜，生蚝和螃蟹超级鲜甜","建议住岛上民宿，晚上可以看星星"],
+    scenery:[
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_8.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_13.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_10.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_2.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_15.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_7.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_1.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_5.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_12.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_14.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_6.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_3.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_11.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_9.jpg",
+      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_4.jpg",
     ]
   },
 ]
 
-// 中国地图SVG（简化轮廓+城市标记）
+// 地图组件：使用自定义地图图片 + 叠加城市标记
 function ChinaMapSVG({ cities, onCityClick, activeCity }) {
-  // 经纬度转SVG坐标（简单线性映射）
-  const toXY = (lat, lng) => {
-    const x = ((lng - 73) / (135 - 73)) * 560 + 20
-    const y = ((53 - lat) / (53 - 18)) * 380 + 20
+  // 以重庆贴纸实测位置(55.0%, 55.4%)为基准校正
+  const fixedCoords: Record<string,{x:number,y:number}> = {
+    quanzhou:  {x:76.8, y:71.0},
+    chengdu:   {x:50.2, y:61.0},
+    chongqing: {x:59.0, y:64.9},
+    haikou:    {x:64.1, y:86.2},
+    nanaodao:  {x:71.5, y:78.1},
+  }
+  const toXY = (lat: number, lng: number, id?: string) => {
+    if(id && fixedCoords[id]) return fixedCoords[id]
+    const x = ((lng - 73) / (135 - 73)) * 84 + 5
+    const y = ((53 - lat) / (53 - 18)) * 76 + 10
     return { x, y }
   }
 
   return (
-    <svg viewBox="0 0 600 420" style={{width:"100%",maxWidth:560,display:"block"}}>
-      {/* 背景 */}
-      <rect x="0" y="0" width="600" height="420" fill="rgba(240,250,243,0.3)" rx="14"/>
-      {/* 简化中国轮廓（装饰性） */}
-      <path d="M 120 40 Q 200 30 280 50 Q 340 40 400 60 Q 460 55 500 80 Q 540 110 530 150 Q 520 180 540 210 Q 550 240 530 270 Q 510 300 480 310 Q 450 330 420 340 Q 390 360 360 370 Q 330 380 300 375 Q 270 380 240 370 Q 210 360 180 345 Q 150 330 130 310 Q 100 290 90 260 Q 75 230 80 200 Q 78 170 85 145 Q 88 115 100 90 Z"
-        fill="rgba(162,214,174,0.18)" stroke="rgba(120,185,142,0.4)" strokeWidth="1.5"/>
-      {/* 城市标记 */}
-      {cities.map(city=>{
-        const {x,y} = toXY(city.lat, city.lng)
-        const isActive = activeCity===city.id
-        return (
-          <g key={city.id} style={{cursor:"pointer"}} onClick={()=>onCityClick(city.id)}>
-            {/* 脉冲圈 */}
-            {isActive&&<circle cx={x} cy={y} r={14} fill="rgba(79,168,104,0.15)" stroke="rgba(79,168,104,0.4)" strokeWidth="1">
-              <animate attributeName="r" values="10;18;10" dur="2s" repeatCount="indefinite"/>
-              <animate attributeName="opacity" values="0.6;0.1;0.6" dur="2s" repeatCount="indefinite"/>
-            </circle>}
-            {/* 标记点 */}
-            <circle cx={x} cy={y} r={isActive?9:7}
-              fill={isActive?"rgba(79,168,104,0.9)":"rgba(162,214,174,0.8)"}
-              stroke={isActive?"rgba(40,100,56,0.6)":"rgba(120,185,142,0.5)"}
-              strokeWidth="1.5"
-              style={{transition:"all 0.2s"}}
-            />
-            <text x={x} y={y+0.5} textAnchor="middle" dominantBaseline="middle" fontSize={isActive?10:9} fontWeight={isActive?"900":"700"} fill={isActive?"#fff":"rgba(40,100,56,0.8)"}>{city.emoji}</text>
-            {/* 城市名 */}
-            <text x={x} y={y+17} textAnchor="middle" fontSize={9} fontWeight="700" fill={isActive?"rgba(40,100,56,0.9)":"rgba(79,168,104,0.8)"} style={{letterSpacing:"0.02em"}}>{city.name}</text>
-          </g>
-        )
-      })}
-      {/* 装饰文字 */}
-      <text x="295" y="406" textAnchor="middle" fontSize="9" fill="rgba(155,200,168,0.5)" style={{letterSpacing:"0.1em"}}>CHINA · 张函瑞去过的地方</text>
-    </svg>
+    <div style={{position:"relative",width:"100%",userSelect:"none"}}>
+      <img
+        src="https://res.cloudinary.com/demfj39xl/image/upload/v1780068528/hanrui/public/image/travel-map.png"
+        alt="中国地图"
+        style={{width:"100%",display:"block",borderRadius:10}}
+      />
+      {/* 城市标记叠加层 */}
+      <div style={{position:"absolute",inset:0}}>
+        {cities.map(city=>{
+          const {x,y} = toXY(city.lat, city.lng, city.id)
+          const isActive = activeCity===city.id
+          return (
+            <div key={city.id}
+              onClick={()=>onCityClick(city.id)}
+              style={{
+                position:"absolute",
+                left:`${x}%`,top:`${y}%`,
+                transform:"translate(-50%,-50%)",
+                cursor:"pointer",
+                display:"flex",flexDirection:"column",alignItems:"center",gap:2,
+                zIndex:isActive?10:1,
+              }}
+            >
+              {/* 脉冲圈 */}
+              {isActive&&(
+                <div style={{
+                  position:"absolute",
+                  width:36,height:36,borderRadius:"50%",
+                  background:"rgba(79,168,104,0.2)",
+                  border:"2px solid rgba(79,168,104,0.5)",
+                  animation:"ping 1.2s ease-out infinite",
+                  top:"50%",left:"50%",transform:"translate(-50%,-50%)",
+                }}/>
+              )}
+              {/* 标记点：有emoji才显示圆圈 */}
+              {((city as any).mapEmoji===undefined || (city as any).mapEmoji) && (
+                <div style={{
+                  width:isActive?30:24,height:isActive?30:24,
+                  borderRadius:"50%",
+                  background:isActive?"rgba(79,168,104,0.95)":"rgba(162,214,174,0.9)",
+                  border:`2px solid ${isActive?"rgba(40,100,56,0.8)":"rgba(120,185,142,0.7)"}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:isActive?14:12,
+                  boxShadow:isActive?"0 4px 14px rgba(40,100,56,0.4)":"0 2px 6px rgba(40,100,56,0.2)",
+                  transition:"all 0.2s",
+                }}>{(city as any).mapEmoji||city.emoji}</div>
+              )}
+              {/* 城市名 */}
+              <div style={{
+                fontSize:10,fontWeight:700,
+                color:isActive?"rgba(30,80,40,0.95)":"rgba(50,100,60,0.8)",
+                background:"rgba(240,252,244,0.85)",
+                borderRadius:4,padding:"1px 5px",
+                whiteSpace:"nowrap",
+                boxShadow:"0 1px 4px rgba(0,0,0,0.1)",
+              }}>{city.name}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
 function TravelSection() {
   const [activeCity, setActiveCity] = useState<string|null>(null)
-  const [lightbox, setLightbox] = useState<{src:string,label:string}|null>(null)
+  const [lightbox, setLightbox] = useState<string|null>(null)
   const city = TRAVEL_DATA.find(c=>c.id===activeCity)
 
   return (
     <>
-      {lightbox&&<Lightbox src={lightbox.src} label={lightbox.label} onClose={()=>setLightbox(null)}/>}
-      <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
-        {/* 地图 */}
-        <div style={{flex:"0 0 auto",width:"min(100%, 380px)"}}>
-          <div style={{
-            background:"rgba(240,250,243,0.55)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-            border:"1px solid rgba(195,228,206,0.5)",borderRadius:14,padding:16,
-          }}>
-            <div style={{fontSize:11,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.08em",marginBottom:10}}>🗺️ 点击地图上的标记查看详情</div>
-            <ChinaMapSVG cities={TRAVEL_DATA} onCityClick={id=>setActiveCity(id===activeCity?null:id)} activeCity={activeCity}/>
-            {/* 城市列表 */}
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
-              {TRAVEL_DATA.map(c=>(
-                <button key={c.id} onClick={()=>setActiveCity(c.id===activeCity?null:c.id)} style={{
-                  padding:"4px 12px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
-                  border:"1px solid",transition:"all 0.15s",
-                  ...(activeCity===c.id
-                    ?{background:"rgba(162,214,174,0.5)",borderColor:"rgba(120,185,142,0.7)",color:"var(--c-ink)"}
-                    :{background:"rgba(255,255,255,0.38)",borderColor:"rgba(195,228,206,0.5)",color:"var(--c-muted)"}
-                  ),
-                }}>{c.emoji} {c.name}</button>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* 照片放大 lightbox */}
+      {lightbox&&<Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>}
 
-        {/* 详情面板 */}
-        <div style={{flex:1,minWidth:260}}>
-          {!city ? (
-            <div style={{
-              height:"100%",minHeight:200,display:"flex",flexDirection:"column",
-              alignItems:"center",justifyContent:"center",
-              background:"rgba(240,250,243,0.35)",border:"1px dashed rgba(195,228,206,0.6)",
-              borderRadius:14,padding:24,textAlign:"center",
-            }}>
-              <div style={{fontSize:36,marginBottom:10}}>🗺️</div>
-              <div style={{fontSize:13,color:"var(--c-muted)"}}>点击地图上的标记<br/>查看张函瑞的旅行分享 ✨</div>
-            </div>
-          ) : (
-            <div style={{
-              background:"rgba(240,250,243,0.55)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-              border:"1px solid rgba(195,228,206,0.5)",borderRadius:14,padding:18,
-              animation:"popIn 0.3s ease",
-            }}>
-              {/* 城市标题 */}
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:12,borderBottom:"1px solid rgba(195,228,206,0.4)"}}>
-                <div style={{fontSize:28}}>{city.emoji}</div>
+      {/* 城市弹窗 */}
+      {city&&(
+        <div onClick={()=>setActiveCity(null)} style={{
+          position:"fixed",inset:0,zIndex:1500,
+          background:"rgba(8,18,12,0.82)",backdropFilter:"blur(14px)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          animation:"fadeIn 0.2s ease",padding:"16px",
+        }}>
+          <div onClick={e=>e.stopPropagation()} style={{
+            background:"rgba(240,252,244,0.97)",borderRadius:20,
+            width:"min(760px,95vw)",maxHeight:"90vh",overflowY:"auto",
+            boxShadow:"0 32px 80px rgba(0,0,0,0.4)",
+            position:"relative",
+          }}>
+            {/* 关闭按钮 */}
+            <button onClick={()=>setActiveCity(null)} style={{
+              position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",
+              background:"rgba(255,255,255,0.95)",border:"1px solid rgba(200,230,208,0.6)",
+              cursor:"pointer",fontSize:14,zIndex:10,
+              display:"flex",alignItems:"center",justifyContent:"center",color:"#3a6646",fontWeight:700,
+            }}>✕</button>
+
+            <div style={{padding:"24px 24px 20px"}}>
+              {/* 标题 */}
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:6}}>
+                <div style={{fontSize:32}}>{city.emoji}</div>
                 <div>
-                  <div style={{fontSize:17,fontWeight:800,color:"var(--c-ink)"}}>{city.name}</div>
-                  <div style={{fontSize:10,color:"var(--c-muted)",marginTop:2}}>最佳旅游时间：{city.bestTime}</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"var(--c-ink)"}}>{city.name}</div>
+                  <div style={{display:"flex",gap:8,marginTop:4,flexWrap:"wrap"}}>
+                    <span style={{fontSize:10,fontWeight:700,color:"var(--c-accent)",background:"rgba(79,168,104,0.1)",border:"1px solid rgba(79,168,104,0.2)",borderRadius:100,padding:"2px 10px"}}>💚 {city.shareDate} 到访</span>
+                    <span style={{fontSize:10,color:"var(--c-muted)",background:"rgba(240,250,243,0.8)",border:"1px solid rgba(195,228,206,0.4)",borderRadius:100,padding:"2px 10px"}}>📅 最佳时间：{city.bestTime}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* 张函瑞的分享 */}
-              <div style={{
-                background:"rgba(79,168,104,0.07)",border:"1px solid rgba(79,168,104,0.18)",
-                borderRadius:10,padding:"11px 14px",marginBottom:14,
-              }}>
-                <div style={{fontSize:9.5,fontWeight:700,color:"var(--c-accent)",letterSpacing:"0.07em",marginBottom:6}}>💚 张函瑞 · {city.shareDate} 分享</div>
-                <div style={{fontSize:12.5,color:"var(--c-ink-2)",lineHeight:1.8,fontStyle:"italic"}}>{city.share}</div>
-              </div>
+              {/* 分享语 */}
+              {city.share&&(
+                <div style={{fontSize:13,color:"var(--c-muted)",fontStyle:"italic",marginBottom:18,paddingLeft:4,lineHeight:1.8}}>
+                  {city.share}
+                </div>
+              )}
 
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                {/* 左：景色图 */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+                {/* 左：九宫格照片 */}
                 <div>
-                  <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:8}}>📸 当地景色</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:10}}>📸 旅行照片</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4}}>
                     {city.scenery.map((img,i)=>(
-                      <div key={i} onClick={()=>setLightbox({src:img,label:`${city.name} · 景色 ${i+1}`})} style={{
-                        borderRadius:8,overflow:"hidden",cursor:"pointer",
+                      <div key={i} onClick={()=>setLightbox(img)} style={{
+                        borderRadius:6,overflow:"hidden",cursor:"pointer",
                         border:"1px solid rgba(195,228,206,0.4)",
-                        transition:"transform 0.2s",
+                        transition:"transform 0.15s,box-shadow 0.15s",
+                        aspectRatio:"1",
                       }}
-                      onMouseEnter={e=>e.currentTarget.style.transform="scale(1.02)"}
-                      onMouseLeave={e=>e.currentTarget.style.transform=""}>
-                        <img src={img} alt="" style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block"}}/>
+                      onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.04)";e.currentTarget.style.boxShadow="0 4px 12px rgba(40,100,56,0.2)"}}
+                      onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow=""}}>
+                        <img src={img} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
                       </div>
                     ))}
-                    <div style={{fontSize:9,color:"var(--c-faint)",textAlign:"center"}}>* 图片待替换为真实照片</div>
                   </div>
                 </div>
 
-                {/* 右：气候 + 攻略 */}
+                {/* 右：气候+攻略 */}
                 <div>
-                  <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:8}}>🌤️ 气候 & 攻略</div>
-                  <div style={{
-                    background:"rgba(255,255,255,0.38)",border:"1px solid rgba(195,228,206,0.4)",
-                    borderRadius:8,padding:"9px 11px",marginBottom:8,
-                  }}>
-                    <div style={{fontSize:11.5,color:"var(--c-ink-2)",lineHeight:1.8}}>{city.climate}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:8}}>🌤️ 气候</div>
+                  <div style={{background:"rgba(255,255,255,0.6)",border:"1px solid rgba(195,228,206,0.4)",borderRadius:10,padding:"10px 12px",marginBottom:14,fontSize:12,color:"var(--c-ink-2)",lineHeight:1.8}}>
+                    {city.climate}
                   </div>
-                  <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:6}}>💡 小贴士</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <div style={{fontSize:10,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.06em",marginBottom:8}}>💡 旅行小贴士</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
                     {city.tips.map((tip,i)=>(
                       <div key={i} style={{
-                        display:"flex",gap:6,alignItems:"flex-start",
-                        padding:"5px 9px",fontSize:11,color:"var(--c-ink-2)",
-                        background:"rgba(240,250,243,0.5)",border:"1px solid rgba(195,228,206,0.3)",
-                        borderRadius:6,lineHeight:1.5,
+                        display:"flex",gap:7,alignItems:"flex-start",
+                        padding:"6px 10px",fontSize:11.5,color:"var(--c-ink-2)",
+                        background:"rgba(240,250,243,0.7)",border:"1px solid rgba(195,228,206,0.35)",
+                        borderRadius:8,lineHeight:1.6,
                       }}>
-                        <span style={{color:"var(--c-accent)",flexShrink:0,fontSize:9,marginTop:2}}>✦</span>
+                        <span style={{color:"var(--c-accent)",flexShrink:0,fontSize:10,marginTop:1}}>✦</span>
                         {tip}
                       </div>
                     ))}
@@ -4016,7 +4179,29 @@ function TravelSection() {
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      )}
+
+      {/* 地图 + 城市按钮 */}
+      <div style={{
+        background:"rgba(240,250,243,0.55)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+        border:"1px solid rgba(195,228,206,0.5)",borderRadius:14,padding:16,
+      }}>
+        <div style={{fontSize:11,fontWeight:700,color:"var(--c-muted)",letterSpacing:"0.08em",marginBottom:10}}>🗺️ 点击地图标记或城市名查看详情</div>
+        <ChinaMapSVG cities={TRAVEL_DATA} onCityClick={id=>setActiveCity(id)} activeCity={activeCity}/>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:12}}>
+          {TRAVEL_DATA.map(c=>(
+            <button key={c.id} onClick={()=>setActiveCity(c.id)} style={{
+              padding:"5px 14px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
+              border:"1px solid rgba(195,228,206,0.5)",
+              background:"rgba(255,255,255,0.38)",color:"var(--c-muted)",
+              transition:"all 0.15s",
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(162,214,174,0.3)";e.currentTarget.style.color="var(--c-ink)"}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.38)";e.currentTarget.style.color="var(--c-muted)"}}
+            >{c.emoji} {c.name}</button>
+          ))}
         </div>
       </div>
     </>
@@ -4027,36 +4212,16 @@ function TravelSection() {
 //  About This Website
 // ════════════════════════════════════════════
 function AboutWebsite() {
-  const paras=[
-    {emoji:"🌱",text:"最开始建这个网站，只是因为不想让那些好看的图片散落在微博的角落里消失掉。于是决定收集，慢慢整理。"},
-    {emoji:"💚",text:"张函瑞身上有一种很难描述的东西。他认真起来的样子，他哭的样子，他在舞台上发光的样子——每一个瞬间都值得被好好记录。"},
-    {emoji:"📂",text:"做这个 archive，是想给每一个喜欢他的人一个可以慢慢翻阅的地方。不用急，不用怕错过，这里的每一张照片、每一段视频，都会一直在。"},
-    {emoji:"🌸",text:"如果你也喜欢他，希望你在这里能感受到一点点温柔。希望我们能一起，看他慢慢长大，慢慢发光。"},
-    {emoji:"✨",text:"人心会变，但这里的痕迹不会改变。 — 站主留"},
-  ]
   return (
-    <div>
-      {paras.map((p,i)=>(
-        <div key={i} style={{
-          padding:"14px 17px",marginBottom:10,
-          background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-          borderRadius:12,border:"1px solid rgba(195,228,206,0.45)",
-          fontSize:13,lineHeight:2,color:"var(--c-ink-2)",
-          display:"flex",gap:12,alignItems:"flex-start",
-          animationDelay:`${i*0.08}s`,animation:"popIn 0.4s ease both",
-        }}>
-          <span style={{fontSize:17,flexShrink:0,marginTop:2}}>{p.emoji}</span>
-          <span>{p.text}</span>
-        </div>
-      ))}
-      <div style={{
-        marginTop:16,padding:"13px 17px",
-        background:"rgba(79,168,104,0.08)",
-        border:"1px solid rgba(79,168,104,0.2)",
-        borderRadius:10,fontSize:12,color:"var(--c-muted)",lineHeight:1.8,fontStyle:"italic",
-      }}>
-        🌿 本站所有图片/视频版权归时代峰峻及张函瑞本人所有，仅供粉丝欣赏，不作任何商业用途。
-      </div>
+    <div style={{
+      padding:"14px 17px",
+      background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+      borderRadius:12,border:"1px solid rgba(195,228,206,0.45)",
+      fontSize:13,lineHeight:2,color:"var(--c-ink-2)",
+      display:"flex",gap:12,alignItems:"flex-start",
+    }}>
+      <span style={{fontSize:17,flexShrink:0,marginTop:2}}>🌱</span>
+      <span>作者的话：Hello！我是组建这个网站的作者，可以叫我Nimo～<br/><br/>选择创造这个网站的初衷源于我在了解ai新技术后的一次心血来潮，当时想着我也可以用现在最流行的vibe thinking（完全依靠和ai对话来编写自己的小程序，app，网站的一种模式）来实现我的想法，于是立马想到给瑞瑞创造一个独立网站🐱<br/><br/>由于是我一个人独立完成全部工作，所以会有不充分的地方（比如周边数据太难拉到所以暂时放弃，以及美食分享板块等等都因为我很难短时间收集完所有数据所以放弃）所以如果有这些数据的娘娘，拜托请发给我&gt;&lt;超级感激🙏（在这个邮箱联络我即可：<a href="mailto:realnimosann@gmail.com" style={{color:"var(--c-accent)",textDecoration:"none"}}>realnimosann@gmail.com</a>）<br/><br/>最后希望大家喜欢这个网页！也一起支持瑞瑞的星途吧～～～<br/>爱两只猫，就要一直爱两只猫 &gt;💚&lt; ～（算上建国）</span>
     </div>
   )
 }
@@ -4477,9 +4642,9 @@ function BianzouSection() {
   const current = BIANZOU_DATA[activeIdx]
 
   return (
-    <div style={{display:"flex",gap:16,minHeight:320}}>
+    <div className="bianzou-layout" style={{display:"flex",gap:16,minHeight:320}}>
       {/* 左：歌单列表 */}
-      <div style={{
+      <div className="bianzou-playlist" style={{
         flex:"0 0 auto",width:220,
         background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
         border:"1px solid rgba(195,228,206,0.45)",borderRadius:14,overflow:"hidden",
@@ -4527,9 +4692,9 @@ function BianzouSection() {
             width:160,height:90,borderRadius:12,overflow:"hidden",
             border:"1px solid rgba(195,228,206,0.5)",
             boxShadow:"0 8px 28px rgba(40,100,56,0.15)",
-            flexShrink:0,position:"relative",
+            flexShrink:0,
           }}>
-            <BiliCard video={current}/>
+            <img src={biliImgProxy(current.cover)} alt={current.title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
           </div>
 
           {/* 标题 + 日期 */}
@@ -4651,7 +4816,7 @@ function GaohuyuSection() {
                 <span style={{marginLeft:"auto",fontSize:11,color:"var(--c-faint)",transition:"transform 0.2s",transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
               </button>
               {isOpen&&(
-                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
+                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
                   {vids.map(v=><BiliCard key={v.bvid} video={v}/>)}
                 </div>
               )}
@@ -4777,6 +4942,8 @@ export default function Home({ data }) {
   const [loading,setLoading]=useState(true)
   const [weiboOpen,setWeiboOpen]=useState({})
   const [weiboModal,setWeiboModal]=useState(null)
+  const [weiboPage,setWeiboPage]=useState(1)
+  const WEIBO_PAGE_SIZE=20
   const [modalVisible,setModalVisible]=useState(false)
   const [lightbox,setLightbox]=useState(null)
   const [activeSection,setActiveSection]=useState("profile")
@@ -4790,6 +4957,7 @@ export default function Home({ data }) {
 
   const openModal=(section)=>{
     setWeiboModal(section)
+    setWeiboPage(1)
     requestAnimationFrame(()=>requestAnimationFrame(()=>setModalVisible(true)))
   }
   const closeModal=()=>{
@@ -4810,7 +4978,7 @@ export default function Home({ data }) {
   const SIDEBAR_LINKS=[
     {id:"profile",emoji:"🌿",label:"瑞的简历"},
     {id:"works",  emoji:"🎬",label:"作品"},
-    {id:"growth", emoji:"🌱",label:"成长录"},
+    {id:"growth", emoji:"💌",label:"成长录"},
     {id:"weibo",  emoji:"📸",label:"微博图集"},
     {id:"daily-share",emoji:"🎀",label:"日常分享"},
     {id:"merch",  emoji:"🛍️",label:"周边收藏"},
@@ -4848,6 +5016,7 @@ export default function Home({ data }) {
         .carousel-track::-webkit-scrollbar{display:none}
 
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes ping{0%{transform:translate(-50%,-50%) scale(1);opacity:0.8}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
         @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
         @keyframes popIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
         @keyframes wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
@@ -4938,10 +5107,34 @@ export default function Home({ data }) {
           .layout{flex-direction:column!important}
           .sidebar{display:none!important}
           .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
-          .section-card{padding:18px 16px!important}
+          .section-card{padding:16px 12px!important}
           .mobile-nav{display:flex!important}
-          .main-content{padding:16px 12px 80px!important}
+          .main-content{padding:12px 10px 80px!important}
           .hide-mobile{display:none!important}
+
+          /* tabs 横向滚动 */
+          .tabs-scroll{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:6px!important;padding-bottom:6px!important;flex-wrap:nowrap!important;scrollbar-width:none!important}
+          .tabs-scroll::-webkit-scrollbar{display:none!important}
+
+          /* 网格两列 */
+          .bili-grid{grid-template-columns:repeat(2,1fr)!important}
+
+          /* 月份导航手机端变为顶部折叠条 */
+          .month-nav{width:100%!important;flex:none!important;order:-1!important;margin-bottom:10px}
+          .month-nav-toggle{display:inline-block!important}
+          .month-nav-inner{flex-direction:row!important;flex-wrap:wrap!important;gap:5px!important;overflow:hidden;max-height:0;transition:max-height 0.3s ease}
+          .month-nav-inner.open{max-height:500px!important}
+
+          /* 编曲竖排 */
+          .bianzou-layout{flex-direction:column!important}
+          .bianzou-playlist{width:100%!important;max-height:200px!important;overflow-y:auto!important}
+
+          /* 站姐竖排 */
+          .zhipai-layout{flex-direction:column!important}
+          .zhipai-stations{flex-direction:row!important;width:100%!important;overflow-x:auto!important;flex-wrap:nowrap!important}
+
+          /* 微博手机端4列 */
+          .weibo-grid{grid-template-columns:repeat(4,1fr)!important;gap:6px!important}
         }
         @media(min-width:769px){
           .mobile-nav{display:none!important}
@@ -5029,8 +5222,8 @@ export default function Home({ data }) {
               </button>
             ))}
           </NavSection>
-          <NavSection emoji="🌱" title="成长录">
-            {["📸 照片","🎬 视频","🐱 喵生日记","📅 星期五练习生","⭐ 一颗好星星","🥚 PD的蛋生","🎯 四一有意思"].map(label=>(
+          <NavSection emoji="💌" title="成长录">
+            {["📅 星期五练习生","⭐ 一颗好星星","🥚 PD的蛋生","🎯 四一有意思","🐱 喵生日记"].map(label=>(
               <button key={label} className="month-btn"
                 onClick={()=>{setActiveSection("growth");sectionRefs.current["growth"]?.scrollIntoView({behavior:"smooth",block:"start"})}}>
                 <span>{label}</span>
@@ -5038,7 +5231,7 @@ export default function Home({ data }) {
             ))}
           </NavSection>
           <div style={{marginTop:"auto",paddingTop:22,textAlign:"center",fontSize:9.5,color:"var(--c-faint)",lineHeight:2.2,letterSpacing:"0.03em"}}>
-            💚 made with love<br/>🌱 for Rui fans
+            💚 made with love<br/>💌 for Rui fans
           </div>
         </aside>
 
@@ -5054,7 +5247,7 @@ export default function Home({ data }) {
               <div style={{display:"inline-flex",alignItems:"center",background:"rgba(255,255,255,0.45)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",borderRadius:100,padding:"3px 13px 3px 6px",fontSize:10,fontWeight:700,color:"var(--c-ink-2)",letterSpacing:"0.07em",marginBottom:12,border:"1px solid rgba(160,210,172,0.40)",gap:6}}>
                 <span style={{fontSize:13}}>🌿</span>WELCOME TO RUI HOUSE
               </div>
-              <h1 style={{fontSize:24,fontWeight:900,color:"var(--c-ink)",marginBottom:9,lineHeight:1.25,letterSpacing:"-0.02em"}}>你好，欢迎来到张函瑞的世界 💚</h1>
+              <h1 style={{fontSize:24,fontWeight:900,color:"var(--c-ink)",marginBottom:9,lineHeight:1.25,letterSpacing:"-0.02em"}}>你好，欢迎来到张函瑞的小屋 💚</h1>
               <p style={{fontSize:12.5,color:"var(--c-ink-2)",lineHeight:1.85,fontWeight:400,marginBottom:13}}>欢迎来到 Rui House！<br/>这里收录了张函瑞成长的一点一滴 ✨</p>
               <div>
                 <span className="pill-tag">🐱 爱瑞小屋</span>
@@ -5078,16 +5271,16 @@ export default function Home({ data }) {
 
           {/* 成长录 */}
           <div ref={el=>sectionRefs.current["growth"]=el} className="section-card" id="growth">
-            <div className="section-heading"><span className="section-heading-badge">🌱</span>成长录</div>
+            <div className="section-heading"><span className="section-heading-badge">💌</span>成长录</div>
             <GrowthSection onLightbox={setLightbox}/>
           </div>
 
           {/* 微博图集 */}
           <div ref={el=>sectionRefs.current["weibo"]=el} id="weibo" className="section-card">
             <div className="section-heading"><span className="section-heading-badge">📸</span>微博图集</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:14}}>
+            <div className="weibo-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:14}}>
               {data.weibo.map((section,si)=>{
-                const cover = section.images[0] || null
+                const cover = section.images[0] ? section.images[0].replace('/image/upload/', '/image/upload/w_300,h_300,c_fill,q_auto,f_auto/') : null
                 return (
                   <div key={section.month} ref={el=>monthRefs.current[section.month]=el}
                     onClick={()=>openModal(section)}
@@ -5095,7 +5288,7 @@ export default function Home({ data }) {
                     onMouseEnter={e=>{e.currentTarget.style.transform="scale(1.04)";e.currentTarget.style.boxShadow="0 8px 32px rgba(100,180,120,0.22)"}}
                     onMouseLeave={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.boxShadow="var(--glass-shadow)"}}>
                     {cover
-                      ? <img src={cover} alt={section.month} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                      ? <img src={cover} alt={section.month} loading="lazy" decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
                       : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>📸</div>
                     }
                     <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom,transparent 45%,rgba(0,0,0,0.45))"}}/>
@@ -5129,10 +5322,18 @@ export default function Home({ data }) {
                 {/* 内容区 */}
                 <div style={{overflowY:"auto",padding:16,flex:1}}>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
-                    {(weiboModal.imageFiles||weiboModal.images.map(u=>({url:u,isVideo:u.match(/\.(mov|mp4)$/i)}))).map((item,i)=>(
+                    {(weiboModal.imageFiles||weiboModal.images.map(u=>({url:u,isVideo:u.match(/\.(mov|mp4)$/i)}))).slice(0,weiboPage*WEIBO_PAGE_SIZE).map((item,i)=>(
                       <WeiboMediaCard key={i} item={item} onClick={url=>setLightbox(url)}/>
                     ))}
-                    {weiboModal.images.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 0",color:"var(--c-faint)",fontSize:13}}>🌱 这个月还没有图片哦～</div>}
+                    {weiboModal.images.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 0",color:"var(--c-faint)",fontSize:13}}>💌 这个月还没有图片哦～</div>}
+                    {weiboPage*WEIBO_PAGE_SIZE < (weiboModal.imageFiles||weiboModal.images).length && (
+                      <div style={{gridColumn:"1/-1",textAlign:"center",padding:"10px 0"}}>
+                        <button onClick={()=>setWeiboPage(p=>p+1)} style={{
+                          padding:"8px 24px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
+                          border:"1px solid rgba(195,228,206,0.5)",background:"rgba(162,214,174,0.2)",color:"var(--c-accent)",
+                        }}>加载更多（{(weiboModal.imageFiles||weiboModal.images).length - weiboPage*WEIBO_PAGE_SIZE} 张）</button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
