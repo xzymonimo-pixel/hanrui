@@ -2877,7 +2877,7 @@ function BiliCard({ video }) {
   const displayTitle = title || video.title || ""
 
   return (
-    <a href={video.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"block"}}>
+    <a href={video.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"block",minWidth:0,width:"100%"}}>
       <div style={{
         borderRadius:12, overflow:"hidden", cursor:"pointer",
         background:"rgba(240,250,243,0.55)",
@@ -3026,7 +3026,7 @@ function BiliTabContent({ tab }) {
       </div>
 
       {/* 视频网格 */}
-      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:12}}>
+      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:12,overflow:"hidden"}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
@@ -3117,7 +3117,7 @@ function ZhipaiSection() {
               <span style={{fontSize:13,fontWeight:800,color:"var(--c-ink)"}}>{year}</span>
               <span style={{fontSize:10,color:"var(--c-muted)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.3)",borderRadius:100,padding:"1px 8px"}}>{byYear[year].length} 条</span>
             </div>
-            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,overflow:"hidden"}}>
               {byYear[year].map((v,i)=>{
                 const bvid = v.url.split('/video/')[1]?.replace('/','') || `zp${station.id}${i}`
                 return (
@@ -3159,7 +3159,7 @@ function MerchSection({ merchCategories, onLightbox }) {
           <p style={{fontSize:13}}>图片放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/merch/{activeTab}/</code> 下 ✨</p>
         </div>
       ):(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13,overflow:"hidden"}}>
           {imgs.map((img,i)=>(
             <div key={i}
               onClick={()=>onLightbox(img)}
@@ -3522,7 +3522,7 @@ function GrowthBiliTab({ data, label }) {
       </div>
 
       {/* 视频网格 */}
-      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,overflow:"hidden"}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
@@ -4816,7 +4816,7 @@ function GaohuyuSection() {
                 <span style={{marginLeft:"auto",fontSize:11,color:"var(--c-faint)",transition:"transform 0.2s",transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
               </button>
               {isOpen&&(
-                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,overflow:"hidden"}}>
                   {vids.map(v=><BiliCard key={v.bvid} video={v}/>)}
                 </div>
               )}
