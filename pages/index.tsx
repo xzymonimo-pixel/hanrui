@@ -48,11 +48,7 @@ export async function getStaticProps() {
   const https_mod = require("https")
   function cloudinaryPage(prefix, cursor) {
     return new Promise((resolve) => {
-<<<<<<< HEAD
-      const p = { prefix, max_results: "500", type: "upload" }
-=======
       const p: Record<string, string> = { prefix, max_results: "500", type: "upload" }
->>>>>>> fresh-main
       if (cursor) p.next_cursor = cursor
       const params = new URLSearchParams(p)
       const options = {
@@ -63,11 +59,7 @@ export async function getStaticProps() {
       const req = https_mod.request(options, res => {
         let b = ""
         res.on("data", d => b += d)
-<<<<<<< HEAD
-        res.on("end", () => { try { resolve(JSON.parse(b)) } catch { resolve({resources:[]}) } })
-=======
         res.on("end", () => { try { resolve(JSON.parse(b) as any) } catch { resolve({resources:[]}) } })
->>>>>>> fresh-main
       })
       req.on("error", () => resolve({resources:[]}))
       req.end()
@@ -78,28 +70,6 @@ export async function getStaticProps() {
   let cursor = null
   do {
     const page = await cloudinaryPage("hanrui/public/20", cursor)
-<<<<<<< HEAD
-    allResources = allResources.concat(page.resources || [])
-    cursor = page.next_cursor || null
-  } while (cursor)
-  const monthSet = [...new Set(allResources.map(r => r.public_id.split("/")[2]))].filter(m => /^\d{4}-\d{2}$/.test(m)).sort((a,b) => a.localeCompare(b))
-
-  const weibo = monthSet.map(month => {
-    const monthResources = allResources.filter(r => r.public_id.includes(`/${month}/`))
-    const imageFiles = monthResources.map(r => ({ url: `https://res.cloudinary.com/demfj39xl/image/upload/${r.public_id}.${r.format}`, filename: r.public_id.split("/").pop(), isVideo: false }))
-    return { month, images: imageFiles.map(r => r.url), imageFiles }
-  })
-
-  // 作品四分类：舞台 考核 编曲 个人作品
-  const worksBase = path.join(publicDir, "作品")
-  const workCategories = {
-    舞台:    getVideosInSubfolder(worksBase, "作品", "舞台"),
-    考核:    getVideosInSubfolder(worksBase, "作品", "考核"),
-    编曲:    getVideosInSubfolder(worksBase, "作品", "编曲"),
-    个人作品: getVideosInSubfolder(worksBase, "作品", "个人作品"),
-  }
-
-=======
     allResources = allResources.concat((page as any).resources || [])
     cursor = (page as any).next_cursor || null
   } while (cursor)
@@ -111,7 +81,6 @@ export async function getStaticProps() {
     return { month, images: imageFiles.map(r => r.url), imageFiles }
   })
 
->>>>>>> fresh-main
   // 周边五分类
   function getMerchCategory(subName) {
     const dir = path.join(publicDir, "merch", subName)
@@ -130,56 +99,6 @@ export async function getStaticProps() {
   }
 
   // BGM 列表
-<<<<<<< HEAD
-const bgmDir = path.join(publicDir, "bgm")
-let bgmList = []
-
-try {
-  const files = fs.readdirSync(bgmDir)
-    .filter(f => f.match(/\.(mp3|ogg|flac|wav|m4a)$/i))
-
-  // 转成统一结构
-  const tracks = files.map(f => ({
-    url: `/bgm/${f}`,
-    name: f.replace(/\.[^.]+$/, "")
-  }))
-
-  // 固定前两首
-  const priorityNames = ["我离开我自己", "光亮"]
-
-  const priorityTracks = []
-  const otherTracks = []
-
-  tracks.forEach(track => {
-    if (priorityNames.includes(track.name)) {
-      priorityTracks.push(track)
-    } else {
-      otherTracks.push(track)
-    }
-  })
-
-  // 按 priorityNames 顺序排列
-  const sortedPriorityTracks = priorityNames
-    .map(name => priorityTracks.find(t => t.name === name))
-    .filter(Boolean)
-
-  // shuffle 其他歌曲
-  const shuffledOthers = otherTracks.sort(() => Math.random() - 0.5)
-
-  // 最终列表
-  bgmList = [
-    ...sortedPriorityTracks,
-    ...shuffledOthers
-  ]
-
-} catch (err) {
-  console.error("读取 BGM 失败:", err)
-}
-
-  return { props: { data: { weibo, workCategories, merchCategories, bgmList } } }
-}
-
-=======
   const BGMCDN = "https://res.cloudinary.com/demfj39xl/video/upload/hanrui/public/bgm"
   const bgmNames = ["我离开我自己","光亮","Crazy","I Lover You 3000","Mascara","forever young","一路生花","传奇","像风一样","克卜勒","兰亭序","如願","小偷","我很快乐","旅行中忘記","星辰大海","是你","永不失联的爱 ","洋葱","玫瑰少年","言不由衷","起风了","逆光","我心永恒"]
   const bgmList = bgmNames.map(name => ({ url: `${BGMCDN}/${name}.mp3`, name }))
@@ -2341,7 +2260,6 @@ const ZHIPAI_DATA = [
   }
 ]
 
->>>>>>> fresh-main
 // ════════════════════════════════════════════
 //  Stable random helpers (SSR-safe)
 // ════════════════════════════════════════════
@@ -2364,11 +2282,7 @@ const STICKERS = [
   { s:"💫",size:16,x:76,y:60,dur:10,delay:0.3 },
   { s:"🍀",size:18,x:85,y:25,dur:14,delay:2.4 },
   { s:"🎀",size:22,x:92,y:70,dur:16,delay:0.9 },
-<<<<<<< HEAD
-  { s:"🌱",size:16,x:8, y:85,dur:11,delay:1.8 },
-=======
   { s:"💌",size:16,x:8, y:85,dur:11,delay:1.8 },
->>>>>>> fresh-main
   { s:"🌸",size:14,x:41,y:48,dur:18,delay:4.0 },
   { s:"✿", size:20,x:55,y:92,dur:13,delay:2.7 },
   { s:"🫧", size:18,x:18,y:42,dur:15,delay:0.6 },
@@ -2458,15 +2372,11 @@ function NavSection({ emoji, title, children }) {
 function ThatDayWidget({ weibo }) {
   const [collapsed,setCollapsed]=useState(false)
   const [lightbox,setLightbox]=useState(null)
-<<<<<<< HEAD
-  const now=new Date()
-=======
   const [showAllToday,setShowAllToday]=useState(false)
   const now=new Date()
   const birthdayThisYear = new Date(now.getFullYear(), 9, 18)
   const nextBirthday = now > birthdayThisYear ? new Date(now.getFullYear()+1, 9, 18) : birthdayThisYear
   const birthdayDays = Math.ceil((nextBirthday.setHours(0,0,0,0)-new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime())/86400000)
->>>>>>> fresh-main
   const todayMD=`${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`
   const todayImgs=[]
   weibo.forEach(({month,imageFiles,images})=>{
@@ -2474,12 +2384,6 @@ function ThatDayWidget({ weibo }) {
     files.forEach((item,idx)=>{
       const filename=typeof item==="object"?item.filename:item
       const url=typeof item==="object"?item.url:images[idx]
-<<<<<<< HEAD
-      const mdMatch=filename.match(/(\d{2}-\d{2})/)
-      if(mdMatch&&mdMatch[1]===todayMD) todayImgs.push({url,year:month.split("-")[0]})
-    })
-  })
-=======
       const source=`${filename||""} ${url||""}`
       const mdMatch=source.match(/(?:^|[^\d])(?:\d{4}[-_.])?(\d{2})[-_.](\d{2})(?:[^\d]|$)/)
       if(mdMatch&&`${mdMatch[1]}-${mdMatch[2]}`===todayMD) todayImgs.push({url,year:month.split("-")[0]})
@@ -2487,7 +2391,6 @@ function ThatDayWidget({ weibo }) {
   })
   const visibleTodayImgs = showAllToday ? todayImgs : todayImgs.slice(0,9)
   const hasMoreTodayImgs = todayImgs.length > 9
->>>>>>> fresh-main
   return (
     <>
       {lightbox&&<Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>}
@@ -2523,22 +2426,6 @@ function ThatDayWidget({ weibo }) {
                 {String(now.getMonth()+1).padStart(2,"0")}/{String(now.getDate()).padStart(2,"0")} 的记忆 ✨
               </div>
               {todayImgs.length===0
-<<<<<<< HEAD
-                ?<div style={{textAlign:"center",padding:"14px 0",fontSize:10.5,color:"#a4c8ae"}}>🌱 今天暂无往年记录</div>
-                :<div style={{display:"flex",flexDirection:"column",gap:7,maxHeight:320,overflowY:"auto"}}>
-                  {todayImgs.map((item,i)=>(
-                    <div key={i} onClick={()=>setLightbox(item.url)}
-                      style={{borderRadius:9,overflow:"hidden",cursor:"pointer",border:"1px solid rgba(195,228,206,0.5)",background:"rgba(255,255,255,0.5)",transition:"transform 0.18s"}}
-                      onMouseEnter={e=>e.currentTarget.style.transform="scale(1.03)"}
-                      onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}
-                    >
-                      <img src={item.url} style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
-                      <div style={{padding:"3px 7px",fontSize:9.5,color:"#4a7a58",fontWeight:600}}>{item.year} 年今日</div>
-                    </div>
-                  ))}
-                </div>
-              }
-=======
                 ?<div style={{textAlign:"center",padding:"14px 0",fontSize:10.5,color:"#a4c8ae"}}>💌 今天暂无往年记录</div>
                 :<>
                   <div style={{
@@ -2584,7 +2471,6 @@ function ThatDayWidget({ weibo }) {
                   {birthdayDays} 天
                 </span>
               </div>
->>>>>>> fresh-main
             </div>
           )}
         </div>
@@ -2601,27 +2487,6 @@ function MusicPlayer({ bgmList }) {
   const [playing,setPlaying]=useState(false)
   const [volume,setVolume]=useState(0.5)
   const [mini,setMini]=useState(false)
-<<<<<<< HEAD
-  const audioRef=useRef(null)
-  const fadeRef=useRef(null)
-  const [interacted,setInteracted]=useState(false)
-
-  // 首次交互后自动播放
-  useEffect(()=>{
-    if(!interacted) return
-    const audio=audioRef.current
-    if(!audio||bgmList.length===0) return
-    audio.volume=volume
-    audio.play().then(()=>setPlaying(true)).catch(()=>{})
-  },[interacted])
-
-  useEffect(()=>{
-    const h=()=>{ if(!interacted) setInteracted(true) }
-    window.addEventListener("click",h,{once:true})
-    window.addEventListener("keydown",h,{once:true})
-    return ()=>{ window.removeEventListener("click",h); window.removeEventListener("keydown",h) }
-  },[interacted])
-=======
   const [showPlaylist,setShowPlaylist]=useState(false)
   const [dragIdx,setDragIdx]=useState(null)
   const [progress,setProgress]=useState(0)
@@ -2637,7 +2502,6 @@ function MusicPlayer({ bgmList }) {
     window.addEventListener("video-play",onVideoPlay)
     return ()=>window.removeEventListener("video-play",onVideoPlay)
   },[])
->>>>>>> fresh-main
 
   const fadeTo=(targetVol,cb)=>{
     const audio=audioRef.current
@@ -2672,11 +2536,8 @@ function MusicPlayer({ bgmList }) {
       audio.pause()
       const next=(idx+dir+bgmList.length)%bgmList.length
       setIdx(next)
-<<<<<<< HEAD
-=======
       setProgress(0)
       setDuration(0)
->>>>>>> fresh-main
       setTimeout(()=>{
         audio.load()
         audio.volume=0
@@ -2698,14 +2559,10 @@ function MusicPlayer({ bgmList }) {
 
   return (
     <>
-<<<<<<< HEAD
-      <audio ref={audioRef} src={song.url} onEnded={handleEnded} preload="metadata"/>
-=======
       <audio ref={audioRef} src={encodeURI(song.url)} onEnded={handleEnded} preload="metadata"
         onTimeUpdate={()=>{ const a=audioRef.current; if(a) setProgress(a.currentTime) }}
         onLoadedMetadata={()=>{ const a=audioRef.current; if(a) setDuration(a.duration) }}
       />
->>>>>>> fresh-main
       <div style={{
         position:"fixed",bottom:24,right:mini?16:20,
         zIndex:500,
@@ -2764,14 +2621,11 @@ function MusicPlayer({ bgmList }) {
                 </div>
               </div>
 
-<<<<<<< HEAD
-=======
               <button onClick={()=>setShowPlaylist(v=>!v)} style={{
                 width:22,height:22,borderRadius:"50%",border:`1px solid ${showPlaylist?"rgba(79,168,104,0.6)":"rgba(195,228,206,0.5)"}`,
                 background:showPlaylist?"rgba(79,168,104,0.2)":"rgba(255,255,255,0.4)",cursor:"pointer",fontSize:9,color:"var(--c-muted)",
                 display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
               }}>☰</button>
->>>>>>> fresh-main
               {/* 折叠按钮 */}
               <button onClick={()=>setMini(true)} style={{
                 width:22,height:22,borderRadius:"50%",border:"1px solid rgba(195,228,206,0.5)",
@@ -2781,11 +2635,7 @@ function MusicPlayer({ bgmList }) {
             </div>
 
             {/* 控制区 */}
-<<<<<<< HEAD
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:10}}>
-=======
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
->>>>>>> fresh-main
               <button onClick={()=>changeTrack(-1)} style={playerBtn}>⏮</button>
               <button onClick={togglePlay} style={{
                 ...playerBtn,
@@ -2795,8 +2645,6 @@ function MusicPlayer({ bgmList }) {
               <button onClick={()=>changeTrack(1)} style={playerBtn}>⏭</button>
             </div>
 
-<<<<<<< HEAD
-=======
             {/* 进度条 */}
             <div style={{marginBottom:8}}>
               <input type="range" min="0" max={duration||100} step="0.1" value={progress}
@@ -2809,7 +2657,6 @@ function MusicPlayer({ bgmList }) {
               </div>
             </div>
 
->>>>>>> fresh-main
             {/* 音量 */}
             <div style={{display:"flex",alignItems:"center",gap:7}}>
               <span style={{fontSize:11,color:"var(--c-muted)"}}>🔈</span>
@@ -2818,8 +2665,6 @@ function MusicPlayer({ bgmList }) {
               />
               <span style={{fontSize:11,color:"var(--c-muted)"}}>🔊</span>
             </div>
-<<<<<<< HEAD
-=======
             {showPlaylist&&(
               <div style={{marginTop:10,borderTop:"1px solid rgba(195,228,206,0.4)",paddingTop:10,maxHeight:200,overflowY:"auto"}}>
                 {bgmList.map((track,i)=>(
@@ -2842,7 +2687,6 @@ function MusicPlayer({ bgmList }) {
                 ))}
               </div>
             )}
->>>>>>> fresh-main
           </div>
         )}
       </div>
@@ -2887,11 +2731,7 @@ function IntroLoading({ onDone }) {
         boxShadow:"0 8px 28px rgba(40,100,56,0.2)",animation:"wiggle 2s ease-in-out infinite",
       }}>🌿</div>
       <div style={{textAlign:"center",lineHeight:2}}>
-<<<<<<< HEAD
-        <div style={{fontSize:12,color:"var(--c-muted)",fontWeight:500,letterSpacing:"0.07em",marginBottom:4}}>✨ 欢迎来到 Rui House ✨</div>
-=======
         <div style={{fontSize:12,color:"var(--c-muted)",fontWeight:500,letterSpacing:"0.07em",marginBottom:4}}>✨ 欢迎来到 Rui World ✨</div>
->>>>>>> fresh-main
         <div style={{fontSize:16,fontWeight:800,color:"var(--c-ink)"}}>张函瑞来到这个地球上</div>
         <div style={{fontSize:40,fontWeight:900,color:"var(--c-accent)",lineHeight:1.1,textShadow:"0 2px 20px rgba(79,168,104,0.3)"}}>
           {days.toLocaleString()}
@@ -2914,11 +2754,7 @@ function EmojiRain() {
   useEffect(()=>{
     const id=setInterval(()=>{
       if(items.length>12) return
-<<<<<<< HEAD
-      const ni={id:Math.random(),x:Math.random()*100,e:["🌿","🍃","💚","✨","🌱"][Math.floor(Math.random()*5)]}
-=======
       const ni={id:Math.random(),x:Math.random()*100,e:["🌿","🍃","💚","✨","💌"][Math.floor(Math.random()*5)]}
->>>>>>> fresh-main
       setItems(v=>[...v,ni])
       setTimeout(()=>setItems(v=>v.filter(i=>i.id!==ni.id)),12000)
     },3000)
@@ -2976,49 +2812,6 @@ function BreathingGlow() {
 }
 
 // ════════════════════════════════════════════
-<<<<<<< HEAD
-//  Works Tabs Carousel
-// ════════════════════════════════════════════
-function WorksSection({ workCategories }) {
-  const tabs=["舞台","考核","编曲","个人作品"]
-  const [activeTab,setActiveTab]=useState("舞台")
-  const trackRef=useRef(null)
-  const autoScrollRef=useRef(null)
-  const [activeIdx,setActiveIdx]=useState(null)
-  const videoRefs=useRef({})
-
-  const startScroll=useCallback((dir)=>{
-    if(autoScrollRef.current) return
-    autoScrollRef.current=setInterval(()=>{
-      if(trackRef.current) trackRef.current.scrollLeft+=dir*3
-    },16)
-  },[])
-  const stopScroll=useCallback(()=>{
-    if(autoScrollRef.current){clearInterval(autoScrollRef.current);autoScrollRef.current=null}
-  },[])
-  const handleMM=useCallback((e)=>{
-    const r=e.currentTarget.getBoundingClientRect()
-    const x=e.clientX-r.left,w=r.width
-    if(x<w*0.2){stopScroll();startScroll(-1)}
-    else if(x>w*0.8){stopScroll();startScroll(1)}
-    else stopScroll()
-  },[startScroll,stopScroll])
-
-  const handleCardClick=(idx)=>{
-    stopScroll()
-    if(activeIdx===idx){setActiveIdx(null)}
-    else{
-      if(activeIdx!==null&&videoRefs.current[activeIdx]) videoRefs.current[activeIdx].pause()
-      setActiveIdx(idx)
-      setTimeout(()=>videoRefs.current[idx]?.play(),50)
-    }
-  }
-
-  // reset on tab change
-  useEffect(()=>{setActiveIdx(null);videoRefs.current={}},[activeTab])
-
-  const vids=workCategories[activeTab]||[]
-=======
 //  图片代理工具函数
 // ════════════════════════════════════════════
 function biliImgProxy(url: string): string {
@@ -3145,16 +2938,11 @@ function BiliCard({ video }) {
 function WorksSection({ workCategories }) {
   const tabs=["舞台","考核","编曲","直拍","抖音","百万视频"]
   const [activeTab,setActiveTab]=useState("舞台")
->>>>>>> fresh-main
 
   return (
     <div>
       {/* Tabs */}
-<<<<<<< HEAD
-      <div style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
-=======
       <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
->>>>>>> fresh-main
         {tabs.map(t=>(
           <button key={t} onClick={()=>setActiveTab(t)} style={{
             padding:"6px 16px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
@@ -3167,51 +2955,6 @@ function WorksSection({ workCategories }) {
         ))}
       </div>
 
-<<<<<<< HEAD
-      {vids.length===0?(
-        <div style={{textAlign:"center",padding:"42px 0",color:"var(--c-faint)"}}>
-          <div style={{fontSize:36,marginBottom:10}}>🎬</div>
-          <p style={{fontSize:13}}>视频放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/作品/{activeTab}/</code> 下 ✨</p>
-        </div>
-      ):(
-        <div style={{position:"relative"}} onMouseMove={handleMM} onMouseLeave={stopScroll}>
-          <div style={{position:"absolute",left:0,top:0,bottom:0,width:40,zIndex:2,pointerEvents:"none",background:"linear-gradient(90deg,rgba(255,255,255,0.55),transparent)",borderRadius:"12px 0 0 12px"}}/>
-          <div style={{position:"absolute",right:0,top:0,bottom:0,width:40,zIndex:2,pointerEvents:"none",background:"linear-gradient(270deg,rgba(255,255,255,0.55),transparent)",borderRadius:"0 12px 12px 0"}}/>
-          <div ref={trackRef} style={{display:"flex",gap:14,overflowX:"auto",paddingBottom:6,scrollbarWidth:"none",cursor:"grab"}} className="carousel-track">
-            {vids.map((vid,i)=>{
-              const name=vid.split("/").pop().replace(/\.[^.]+$/,"")
-              const isActive=activeIdx===i
-              return (
-                <div key={i} onClick={()=>handleCardClick(i)} style={{
-                  flexShrink:0,width:isActive?340:200,transition:"width 0.35s cubic-bezier(.25,.8,.25,1)",
-                  borderRadius:14,overflow:"hidden",cursor:"pointer",
-                  background:"rgba(240,250,243,0.55)",
-                  backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-                  border:`1px solid ${isActive?"rgba(120,185,142,0.8)":"rgba(195,228,206,0.5)"}`,
-                  boxShadow:isActive?"0 8px 28px rgba(40,100,56,0.18)":"0 2px 10px rgba(40,100,56,0.07)",
-                }}>
-                  <div style={{position:"relative"}}>
-                    <video ref={el=>videoRefs.current[i]=el} src={vid} preload="metadata" controls={isActive} muted={!isActive}
-                      style={{width:"100%",aspectRatio:"16/9",objectFit:"cover",display:"block"}}/>
-                    {!isActive&&(
-                      <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        <div style={{width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,0.82)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,boxShadow:"0 2px 10px rgba(0,0,0,0.13)"}}>▶</div>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{padding:"9px 13px",fontSize:11.5,color:"var(--c-ink-3)",fontWeight:600,letterSpacing:"0.02em",borderTop:"1px solid rgba(195,228,206,0.4)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                    🎬 {name}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 4px 0",fontSize:9.5,color:"var(--c-faint)",pointerEvents:"none"}}>
-            <span>← 移到左侧滚动</span><span>移到右侧滚动 →</span>
-          </div>
-        </div>
-      )}
-=======
       {activeTab==="直拍" && <ZhipaiSection/>}
       {activeTab==="抖音" && <DouyinSection/>}
       {activeTab==="百万视频" && <BaiwanSection/>}
@@ -3385,7 +3128,6 @@ function ZhipaiSection() {
           </div>
         ))}
       </div>
->>>>>>> fresh-main
     </div>
   )
 }
@@ -3417,11 +3159,7 @@ function MerchSection({ merchCategories, onLightbox }) {
           <p style={{fontSize:13}}>图片放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/merch/{activeTab}/</code> 下 ✨</p>
         </div>
       ):(
-<<<<<<< HEAD
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:13}}>
-=======
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13}}>
->>>>>>> fresh-main
           {imgs.map((img,i)=>(
             <div key={i}
               onClick={()=>onLightbox(img)}
@@ -3499,13 +3237,9 @@ function WeiboMediaCard({ item, onClick, idx }) {
     <div style={wrapStyle} onClick={() => onClick(url)} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       {isVideo
         ? <video src={url} autoPlay loop muted playsInline style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",borderRadius:style==="normal"?12:4}}/>
-<<<<<<< HEAD
-        : <img src={url} alt="" loading="lazy" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",borderRadius:style==="normal"?12:4}}/>
-=======
         : <img src={url} alt="" loading="lazy"
             onError={e=>{(e.target as HTMLImageElement).style.opacity='0.2'}}
             style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block",borderRadius:style==="normal"?12:4}}/>
->>>>>>> fresh-main
       }
       {/* LIVE badge */}
       {isVideo && <span style={{position:"absolute",top:8,left:8,fontSize:8,background:"rgba(79,168,104,0.7)",border:"1px solid rgba(79,168,104,0.5)",borderRadius:4,padding:"1px 5px",color:"#fff",fontWeight:700,letterSpacing:"0.05em"}}>LIVE</span>}
@@ -3521,18 +3255,6 @@ function WeiboMediaCard({ item, onClick, idx }) {
 // ════════════════════════════════════════════
 function ProfileSection() {
   const timeline=[
-<<<<<<< HEAD
-    {year:"2009",text:"10月18日，张函瑞出生于重庆 🌿"},
-    {year:"2022",text:"加入时代峰峻练习生体系 ✨"},
-    {year:"2023",text:"出道选拔，展现舞台天赋 💚"},
-    {year:"2024",text:"正式出道，开启艺人生涯 🌸"},
-    {year:"2025",text:"持续成长，每一天都在发光 ⭐"},
-  ]
-  const tags={
-   舞台风格:["舞台人格","情绪感染力","猫系氛围","反差感"],
-   性格关键词:["INFJ","绿老头","小发雷霆","对朋友很好","爱哭包"],
-   成长关键词:["爱猫一族","猫塑","慢热型","真诚感","越长大越耀眼"],
-=======
     {year:"2009",text:"这一年的10月18日,是一个美好的日子。重庆迎来了一位可爱的小男孩，父母给他起名为\u201c张函瑞\u201d，一个可爱又朗朗上口的名字，仿佛自带英文名Henry，后来也确实取了Henry做英文名 🌿"},
     {year:"2021",text:"这一年，一个爱唱歌的小孩哥单枪匹马闯进了中国好声音重庆赛区的决赛，彼时他才刚系统接触唱歌没多久，但却展现出了超高的声乐天赋。虽然最后因为年龄太小没能进入全国赛，但小函瑞开始被很多业内的人士看见🎤"},
     {year:"2022",text:"在表姐的怂恿下，张函瑞去了当地一家赫赫有名的公司——时代峰峻面试，结果不仅立马被选上，而且在进入公司后的一个月，在2月14日这天，作为TF家族四代练习生正式公开了。或许是面试时唱的太惊艳让公司立马签约生怕错过此等天才吧 ✨"},
@@ -3545,7 +3267,6 @@ function ProfileSection() {
    舞台风格:["大主唱","舞台人格","情绪感染力","全能ACE","饭撒的神"],
    性格关键词:["细腻温柔","对朋友很好","爱哭包","有点小迷糊","温脸萌"],
    成长关键词:["爱猫一族","猫塑","真诚感","高度自律","越长大越耀眼"],
->>>>>>> fresh-main
   }
   return (
     <div>
@@ -3600,8 +3321,6 @@ function ProfileSection() {
   )
 }
 
-<<<<<<< HEAD
-=======
 // 成长录通用BiliTab：三列网格+右侧月份导航
 const BAIWANWUTAI_DATA = [
   { bvid:"BV1F44y1P7qa", title:"张函瑞歌曲COVER《我很快乐》", cover:"http://i0.hdslb.com/bfs/archive/7d584deb8731a48f13fafa5301c339409f546859.jpg", url:"https://www.bilibili.com/video/BV1F44y1P7qa/", date:"2022-03", tags:[] },
@@ -4489,43 +4208,10 @@ function TravelSection() {
   )
 }
 
->>>>>>> fresh-main
 // ════════════════════════════════════════════
 //  About This Website
 // ════════════════════════════════════════════
 function AboutWebsite() {
-<<<<<<< HEAD
-  const paras=[
-    {emoji:"🌱",text:"最开始建这个网站，只是因为不想让那些好看的图片散落在微博的角落里消失掉。后来慢慢收集，慢慢整理，才发现自己喜欢他喜欢得比想象中更认真。"},
-    {emoji:"💚",text:"喜欢张函瑞，是因为他身上有一种很难描述的东西。他认真起来的样子，他哭的样子，他在舞台上发光的样子——每一个瞬间都值得被好好记录。"},
-    {emoji:"📂",text:"做这个 archive，是想给每一个喜欢他的人一个可以慢慢翻阅的地方。不用急，不用怕错过，这里的每一张照片、每一段视频，都会一直在。"},
-    {emoji:"🌸",text:"如果你也喜欢他，希望你在这里能感受到一点点温柔。希望我们能一起，看他慢慢长大，慢慢发光。"},
-    {emoji:"✨",text:"爱他，就一直爱下去。 — 站主留"},
-  ]
-  return (
-    <div>
-      {paras.map((p,i)=>(
-        <div key={i} style={{
-          padding:"14px 17px",marginBottom:10,
-          background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-          borderRadius:12,border:"1px solid rgba(195,228,206,0.45)",
-          fontSize:13,lineHeight:2,color:"var(--c-ink-2)",
-          display:"flex",gap:12,alignItems:"flex-start",
-          animationDelay:`${i*0.08}s`,animation:"popIn 0.4s ease both",
-        }}>
-          <span style={{fontSize:17,flexShrink:0,marginTop:2}}>{p.emoji}</span>
-          <span>{p.text}</span>
-        </div>
-      ))}
-      <div style={{
-        marginTop:16,padding:"13px 17px",
-        background:"rgba(79,168,104,0.08)",
-        border:"1px solid rgba(79,168,104,0.2)",
-        borderRadius:10,fontSize:12,color:"var(--c-muted)",lineHeight:1.8,fontStyle:"italic",
-      }}>
-        🌿 本站所有图片/视频版权归原作者及张函瑞本人所有，仅供粉丝欣赏，不作任何商业用途。
-      </div>
-=======
   return (
     <div style={{
       padding:"14px 17px",
@@ -5245,7 +4931,6 @@ function FoodSection() {
           </div>
         )
       })}
->>>>>>> fresh-main
     </div>
   )
 }
@@ -5290,13 +4975,9 @@ export default function Home({ data }) {
   const SIDEBAR_LINKS=[
     {id:"profile",emoji:"🌿",label:"瑞的简历"},
     {id:"works",  emoji:"🎬",label:"作品"},
-<<<<<<< HEAD
-    {id:"weibo",  emoji:"📸",label:"微博图集"},
-=======
     {id:"growth", emoji:"💌",label:"成长录"},
     {id:"weibo",  emoji:"📸",label:"微博图集"},
     {id:"daily-share",emoji:"🎀",label:"日常分享"},
->>>>>>> fresh-main
     {id:"merch",  emoji:"🛍️",label:"周边收藏"},
     {id:"about-site",emoji:"💌",label:"关于本站"},
   ]
@@ -5332,20 +5013,14 @@ export default function Home({ data }) {
         .carousel-track::-webkit-scrollbar{display:none}
 
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-<<<<<<< HEAD
-=======
         @keyframes ping{0%{transform:translate(-50%,-50%) scale(1);opacity:0.8}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
->>>>>>> fresh-main
         @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
         @keyframes popIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
         @keyframes wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
         @keyframes breathGlow{0%{opacity:0.55;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}100%{opacity:0.65;transform:scale(0.98)}}
         @keyframes vinylSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes waveRipple{0%{opacity:0.5;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
-<<<<<<< HEAD
-=======
         @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
->>>>>>> fresh-main
         @keyframes sticker0{0%{transform:translateY(0) rotate(0deg) scale(1)}50%{transform:translateY(-12px) rotate(4deg) scale(1.04)}100%{transform:translateY(-20px) rotate(-3deg) scale(0.97)}}
         @keyframes sticker1{0%{transform:translateY(0) rotate(0deg) translateX(0)}40%{transform:translateY(-8px) rotate(-5deg) translateX(6px)}100%{transform:translateY(-16px) rotate(3deg) translateX(-4px)}}
         @keyframes sticker2{0%{transform:translateY(0) scale(1) rotate(0deg)}60%{transform:translateY(-14px) scale(1.06) rotate(6deg)}100%{transform:translateY(-10px) scale(0.95) rotate(-2deg)}}
@@ -5427,14 +5102,6 @@ export default function Home({ data }) {
         .sidebar-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(155,210,168,0.40),transparent);margin:12px 0}
         @media(max-width:768px){
           .layout{flex-direction:column!important}
-<<<<<<< HEAD
-          .sidebar{width:100%!important;height:auto!important;position:relative!important}
-          .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
-          .section-card{padding:18px 16px!important}
-        }
-      `}}/>
-
-=======
           .sidebar{display:none!important}
           .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
           .section-card{padding:16px 12px!important}
@@ -5500,20 +5167,14 @@ export default function Home({ data }) {
         ))}
       </nav>
 
->>>>>>> fresh-main
       <BreathingGlow/>
       <FloatingDeco/>
       <EmojiRain/>
       <MouseTrail/>
 
       {loading&&<IntroLoading onDone={()=>setLoading(false)}/>}
-<<<<<<< HEAD
-      {!loading&&<ThatDayWidget weibo={data.weibo}/>}
-      {!loading&&<MusicPlayer bgmList={data.bgmList}/>}
-=======
       {!loading&&<span className="hide-mobile"><ThatDayWidget weibo={data.weibo}/></span>}
       {!loading&&<span className="hide-mobile"><MusicPlayer bgmList={data.bgmList}/></span>}
->>>>>>> fresh-main
       {lightbox&&<Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>}
 
       <div className="layout" style={{display:"flex",minHeight:"100vh",position:"relative",zIndex:1}}>
@@ -5550,10 +5211,6 @@ export default function Home({ data }) {
               </button>
             ))}
           </NavSection>
-<<<<<<< HEAD
-          <div style={{marginTop:"auto",paddingTop:22,textAlign:"center",fontSize:9.5,color:"var(--c-faint)",lineHeight:2.2,letterSpacing:"0.03em"}}>
-            💚 made with love<br/>🌱 for Rui fans
-=======
           <NavSection emoji="🎀" title="日常分享">
             {["歌单","美食","香水","旅行","高会语音"].map(sub=>(
               <button key={sub} className="month-btn"
@@ -5572,16 +5229,11 @@ export default function Home({ data }) {
           </NavSection>
           <div style={{marginTop:"auto",paddingTop:22,textAlign:"center",fontSize:9.5,color:"var(--c-faint)",lineHeight:2.2,letterSpacing:"0.03em"}}>
             💚 made with love<br/>💌 for Rui fans
->>>>>>> fresh-main
           </div>
         </aside>
 
         {/* ─── Main ─── */}
-<<<<<<< HEAD
-        <main style={{flex:1,padding:"30px 38px 50px",maxWidth:980}}>
-=======
         <main className="main-content" style={{flex:1,padding:"30px 38px 50px",maxWidth:980}}>
->>>>>>> fresh-main
 
           {/* Hero */}
           <div className="hero-banner">
@@ -5590,17 +5242,10 @@ export default function Home({ data }) {
             </div>
             <div style={{position:"relative",zIndex:1,flex:1}}>
               <div style={{display:"inline-flex",alignItems:"center",background:"rgba(255,255,255,0.45)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",borderRadius:100,padding:"3px 13px 3px 6px",fontSize:10,fontWeight:700,color:"var(--c-ink-2)",letterSpacing:"0.07em",marginBottom:12,border:"1px solid rgba(160,210,172,0.40)",gap:6}}>
-<<<<<<< HEAD
-                <span style={{fontSize:13}}>🌿</span>WELCOME TO RUI HOUSE
-              </div>
-              <h1 style={{fontSize:24,fontWeight:900,color:"var(--c-ink)",marginBottom:9,lineHeight:1.25,letterSpacing:"-0.02em"}}>你好，欢迎来到我的世界 💚</h1>
-              <p style={{fontSize:12.5,color:"var(--c-ink-2)",lineHeight:1.85,fontWeight:400,marginBottom:13}}>欢迎来到 Rui House！<br/>这里收录了张函瑞成长的一点一滴 ✨</p>
-=======
                 <span style={{fontSize:13}}>🌿</span>WELCOME TO RUI WORLD
               </div>
               <h1 style={{fontSize:24,fontWeight:900,color:"var(--c-ink)",marginBottom:9,lineHeight:1.25,letterSpacing:"-0.02em"}}>你好，欢迎来到张函瑞的世界 💚</h1>
               <p style={{fontSize:12.5,color:"var(--c-ink-2)",lineHeight:1.85,fontWeight:400,marginBottom:13}}>欢迎来到 Rui World！<br/>这里收录了张函瑞成长的一点一滴 ✨</p>
->>>>>>> fresh-main
               <div>
                 <span className="pill-tag">🐱 爱瑞小屋</span>
                 <span className="pill-tag">📸 成长痕迹</span>
@@ -5609,11 +5254,7 @@ export default function Home({ data }) {
             </div>
           </div>
 
-<<<<<<< HEAD
-          {/* 瑞的简历 */}
-=======
           {/* 张函瑞的简历 */}
->>>>>>> fresh-main
           <div ref={el=>sectionRefs.current["profile"]=el} className="section-card" id="profile">
             <div className="section-heading"><span className="section-heading-badge">🌿</span>瑞的简历</div>
             <ProfileSection/>
@@ -5625,12 +5266,6 @@ export default function Home({ data }) {
             <WorksSection workCategories={data.workCategories}/>
           </div>
 
-<<<<<<< HEAD
-          {/* 微博图集 */}
-          <div ref={el=>sectionRefs.current["weibo"]=el} id="weibo" className="section-card">
-            <div className="section-heading"><span className="section-heading-badge">📸</span>微博图集</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
-=======
           {/* 成长录 */}
           <div ref={el=>sectionRefs.current["growth"]=el} className="section-card" id="growth">
             <div className="section-heading"><span className="section-heading-badge">💌</span>成长录</div>
@@ -5641,7 +5276,6 @@ export default function Home({ data }) {
           <div ref={el=>sectionRefs.current["weibo"]=el} id="weibo" className="section-card">
             <div className="section-heading"><span className="section-heading-badge">📸</span>微博图集</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:14}}>
->>>>>>> fresh-main
               {data.weibo.map((section,si)=>{
                 const cover = section.images[0] || null
                 return (
@@ -5688,23 +5322,13 @@ export default function Home({ data }) {
                     {(weiboModal.imageFiles||weiboModal.images.map(u=>({url:u,isVideo:u.match(/\.(mov|mp4)$/i)}))).map((item,i)=>(
                       <WeiboMediaCard key={i} item={item} onClick={url=>setLightbox(url)}/>
                     ))}
-<<<<<<< HEAD
-                    {weiboModal.images.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 0",color:"var(--c-faint)",fontSize:13}}>🌱 这个月还没有图片哦～</div>}
-=======
                     {weiboModal.images.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"40px 0",color:"var(--c-faint)",fontSize:13}}>💌 这个月还没有图片哦～</div>}
->>>>>>> fresh-main
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-<<<<<<< HEAD
-          {/* 周边 */}
-          <div ref={el=>sectionRefs.current["merch"]=el} className="section-card" id="merch">
-            <div className="section-heading"><span className="section-heading-badge">🛍️</span>周边收藏</div>
-            <MerchSection merchCategories={data.merchCategories} onLightbox={url=>setLightbox(url)}/>
-=======
           {/* 日常分享 */}
           <div ref={el=>sectionRefs.current["daily-share"]=el} className="section-card" id="daily-share">
             <div className="section-heading"><span className="section-heading-badge">🎀</span>日常分享</div>
@@ -5729,7 +5353,6 @@ export default function Home({ data }) {
                 </div>
               ))}
             </div>
->>>>>>> fresh-main
           </div>
 
           {/* 关于本站 */}
@@ -5742,18 +5365,10 @@ export default function Home({ data }) {
           <div style={{textAlign:"center",padding:"22px 0 46px"}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(240,250,243,0.58)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",border:"1px solid var(--glass-border-soft)",borderRadius:100,padding:"10px 22px",marginBottom:12,fontSize:16,boxShadow:"var(--glass-shadow)"}}>🌿 💚 🌿</div>
             <div style={{fontSize:12,color:"var(--c-muted)",fontWeight:500,marginBottom:4}}>made with 💚 by a Rui fan · 永远支持你 ✨</div>
-<<<<<<< HEAD
-            <div style={{fontSize:10.5,color:"var(--c-faint)"}}>照片版权归原作者所有，仅供粉丝欣赏</div>
-=======
             <div style={{fontSize:10.5,color:"var(--c-faint)"}}>照片版权归时代峰峻及张函瑞本人所有，仅供粉丝欣赏</div>
->>>>>>> fresh-main
           </div>
         </main>
       </div>
     </>
   )
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> fresh-main
