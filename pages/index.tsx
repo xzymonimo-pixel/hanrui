@@ -5015,7 +5015,8 @@ export default function Home({ data }) {
         ::-webkit-scrollbar-thumb{background:var(--c-accent-l);border-radius:10px}
         .carousel-track::-webkit-scrollbar{display:none}
 
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        html,body{overflow-x:hidden;max-width:100vw}
+        *{box-sizing:border-box}
         @keyframes ping{0%{transform:translate(-50%,-50%) scale(1);opacity:0.8}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
         @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
         @keyframes popIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
