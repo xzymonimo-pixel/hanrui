@@ -2,12 +2,19 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import '../styles/index.css'
 
-export default function MyApp({ Component, pageProps }: AppProps) {
-  return(
+export default function App({ Component, pageProps }: AppProps) {
+  return (
     <>
       <Head>
-        <title>瑞的小屋</title>
-        <meta property="og:image" content="https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/og-image.png" />
+        <script dangerouslySetInnerHTML={{__html: `
+          var _hmt = _hmt || [];
+          (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?07f5bad57be3545dd5103c277fa43a63";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+          })();
+        `}}/>
       </Head>
       <Component {...pageProps} />
     </>
