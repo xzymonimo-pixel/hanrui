@@ -5626,7 +5626,7 @@ export default function Home({ data }) {
           .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
           .section-card{padding:16px 12px!important}
           .mobile-nav{display:flex!important}
-          .main-content{padding:12px 10px 80px!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+          .main-content{padding:12px 10px 80px!important;width:100vw!important;max-width:100vw!important;box-sizing:border-box!important;flex:none!important}
           .hide-mobile{display:none!important}
 
           /* tabs 横向滚动 */
@@ -5753,7 +5753,7 @@ export default function Home({ data }) {
         </aside>
 
         {/* ─── Main ─── */}
-        <main className="main-content" style={{flex:1,padding:"30px 38px 50px",maxWidth:980}}>
+        <main className="main-content" style={{flex:1,padding:"30px 38px 50px",maxWidth:980,boxSizing:"border-box"}}>
 
           {/* Hero */}
           <div className="hero-banner">
