@@ -5614,8 +5614,8 @@ export default function Home({ data }) {
         .expand-btn.open{background:rgba(162,214,174,0.38);color:var(--c-ink)}
         .sidebar-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(155,210,168,0.40),transparent);margin:12px 0}
         @media(max-width:768px){
-          .layout{flex-direction:column!important}
-          .sidebar{display:none!important}
+          .layout{display:block!important}
+          .sidebar{display:none!important;width:0!important;overflow:hidden!important}
           .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
           .section-card{padding:16px 12px!important}
           .mobile-nav{display:flex!important}
