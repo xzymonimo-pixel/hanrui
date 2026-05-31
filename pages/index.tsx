@@ -5736,7 +5736,7 @@ export default function Home({ data }) {
           backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
           border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);
           border-radius:var(--glass-radius);padding:30px 34px;margin-bottom:22px;
-          animation:popIn 0.4s ease both;
+          animation:popIn 0.4s ease both;overflow:hidden;
         }
         .img-card{
           background:rgba(240,250,243,0.55);
