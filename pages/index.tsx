@@ -3090,7 +3090,7 @@ function ZhipaiSection() {
       </div>
 
       {/* 年份快速导航 */}
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+      <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:14}}>
         {years.map(year=>(
           <button key={year} onClick={()=>scrollToYear(year)} style={{
             padding:"3px 10px",borderRadius:100,fontSize:11,fontWeight:700,
@@ -3513,7 +3513,7 @@ function GrowthBiliTab({ data, label }) {
   return (
     <div>
       {/* 月份筛选 - 下拉选择器 */}
-      <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center"}}>
+      <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center",overflow:"hidden",maxWidth:"100%"}}>
         <select value={activeMonth||""} onChange={e=>setActiveMonth(e.target.value||null)}
           style={{flex:1,padding:"6px 10px",borderRadius:10,fontSize:12,fontWeight:600,fontFamily:"inherit",
             border:"1px solid rgba(195,228,206,0.6)",background:"rgba(240,250,243,0.8)",
@@ -3526,7 +3526,7 @@ function GrowthBiliTab({ data, label }) {
       </div>
 
       {/* 视频网格 */}
-      <div className="growth-bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:10}}>
+      <div className="growth-bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
