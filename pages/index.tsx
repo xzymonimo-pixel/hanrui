@@ -2886,7 +2886,7 @@ function BiliCard({ video }) {
   const displayTitle = title || video.title || ""
 
   return (
-    <a href={video.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"block"}}>
+    <a href={video.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"block",minWidth:0,overflow:"hidden"}}>
       <div style={{
         borderRadius:12, overflow:"hidden", cursor:"pointer",
         background:"rgba(240,250,243,0.55)",
