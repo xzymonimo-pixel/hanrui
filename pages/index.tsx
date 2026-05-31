@@ -5280,7 +5280,7 @@ export default function Home({ data }) {
             <div className="section-heading"><span className="section-heading-badge">📸</span>微博图集</div>
             <div className="weibo-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:14}}>
               {data.weibo.map((section,si)=>{
-                const cover = section.images[0] ? section.images[0].split('?')[0] + '?tr=w-300,h-300,fo-auto' : null
+                const cover = section.images[0] ? section.images[0].replace('/image/upload/', '/image/upload/w_300,h_300,c_fill,q_auto,f_auto/') : null
                 return (
                   <div key={section.month} ref={el=>monthRefs.current[section.month]=el}
                     onClick={()=>openModal(section)}
