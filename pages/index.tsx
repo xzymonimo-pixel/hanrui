@@ -5816,11 +5816,11 @@ export default function Home({ data }) {
           .hide-mobile{display:none!important}
 
           /* tabs 横向滚动 */
-          .tabs-scroll{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:6px!important;padding-bottom:6px!important;flex-wrap:nowrap!important;scrollbar-width:none!important}
+          .tabs-scroll{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:6px!important;padding-bottom:6px!important;flex-wrap:nowrap!important;max-width:100%!important;width:100%!important;scrollbar-width:none!important}
           .tabs-scroll::-webkit-scrollbar{display:none!important}
 
           /* 网格两列 */
-          .bili-grid{grid-template-columns:repeat(2,1fr)!important}
+          .bili-grid{grid-template-columns:repeat(2,1fr)!important;overflow:hidden!important}
 
           /* 月份导航手机端变为顶部折叠条 */
           .month-nav{width:100%!important;flex:none!important;order:-1!important;margin-bottom:10px}
