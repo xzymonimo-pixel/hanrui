@@ -45,34 +45,53 @@ export async function getStaticProps() {
     return results
   }
 
-  const https_mod = require("https")
-  function imagekitPage(skip) {
-    return new Promise((resolve) => {
-      const params = new URLSearchParams({ skip: String(skip), limit: "1000", includeFolder: "false" })
-      const options = {
-        hostname: "api.imagekit.io",
-        path: `/v1/files?${params}`,
-        headers: { Authorization: "Basic " + Buffer.from((process.env.IMAGEKIT_PRIVATE_KEY || "") + ":").toString("base64") }
-      }
-      const req = https_mod.request(options, res => {
-        let b = ""
-        res.on("data", d => b += d)
-        res.on("end", () => { try { resolve(JSON.parse(b) as any) } catch { resolve([]) } })
-      })
-      req.on("error", () => resolve([]))
-      req.end()
-    })
-  }
-
+  // 先读缓存，没有才从 ImageKit API 拉取
+  const cacheFile = path.join(process.cwd(), "public", "cache", "weibo-resources.json")
   let allResources = []
-  let skip = 0
-  while (true) {
-    const page = await imagekitPage(skip) as any[]
-    if (!Array.isArray(page) || page.length === 0) break
-    const filtered = page.filter((r:any) => /^hanrui_public_20\d{2}-\d{2}_/.test(r.name))
-    allResources = allResources.concat(filtered)
-    if (page.length < 1000) break
-    skip += 1000
+
+  try {
+    const cached = fs.readFileSync(cacheFile, "utf-8")
+    allResources = JSON.parse(cached)
+    console.log(`[cache] loaded ${allResources.length} resources from cache`)
+  } catch {
+    console.log("[cache] no cache found, fetching from ImageKit API...")
+    const https_mod = require("https")
+    function imagekitPage(skip) {
+      return new Promise((resolve) => {
+        const params = new URLSearchParams({ skip: String(skip), limit: "1000", includeFolder: "false" })
+        const options = {
+          hostname: "api.imagekit.io",
+          path: `/v1/files?${params}`,
+          headers: { Authorization: "Basic " + Buffer.from((process.env.IMAGEKIT_PRIVATE_KEY || "") + ":").toString("base64") }
+        }
+        const req = https_mod.request(options, res => {
+          let b = ""
+          res.on("data", d => b += d)
+          res.on("end", () => { try { resolve(JSON.parse(b) as any) } catch { resolve([]) } })
+        })
+        req.on("error", () => resolve([]))
+        req.end()
+      })
+    }
+
+    let skip = 0
+    while (true) {
+      const page = await imagekitPage(skip) as any[]
+      if (!Array.isArray(page) || page.length === 0) break
+      const filtered = page.filter((r:any) => /^hanrui_public_20\d{2}-\d{2}_/.test(r.name))
+      allResources = allResources.concat(filtered)
+      if (page.length < 1000) break
+      skip += 1000
+    }
+
+    // 保存缓存
+    try {
+      fs.mkdirSync(path.join(process.cwd(), "public", "cache"), { recursive: true })
+      fs.writeFileSync(cacheFile, JSON.stringify(allResources))
+      console.log(`[cache] saved ${allResources.length} resources to cache`)
+    } catch(e) {
+      console.log("[cache] failed to save cache:", e)
+    }
   }
 
   function extractMonth(name: string): string | null {
