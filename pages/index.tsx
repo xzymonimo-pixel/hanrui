@@ -5820,7 +5820,7 @@ export default function Home({ data }) {
           .tabs-scroll::-webkit-scrollbar{display:none!important}
 
           /* 网格两列 */
-          .bili-grid{grid-template-columns:repeat(2,1fr)!important}
+          .bili-grid{grid-template-columns:repeat(3,1fr)!important}
 
           /* 月份导航手机端变为顶部折叠条 */
           .month-nav{width:100%!important;flex:none!important;order:-1!important;margin-bottom:10px}
