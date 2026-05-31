@@ -3541,8 +3541,199 @@ function GrowthBiliTab({ data, label }) {
 // ════════════════════════════════════════════
 //  成长录 Section
 // ════════════════════════════════════════════
+// 瑞麦时间线数据（虚拟演示）
+const RUIMAI_DATA = [
+  { year:"2017", age:7, songs:[
+    { title:"丑八怪", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=130" },
+    { title:"你怎么舍得我难过", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=131" },
+    { title:"张三的歌", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=132" },
+    { title:"玫瑰香", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=133" }
+,
+    { title:"阿楚姑娘", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=66" },
+    { title:"唱脸谱", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=70" },
+    { title:"Pink Venom", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=71" },
+    { title:"Mascara", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=72" }
+  ]},
+  { year:"2018", age:8, songs:[
+    { title:"鹿 be free", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=123" },
+    { title:"倒数", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=124" },
+    { title:"天黑黑", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=125" },
+    { title:"说散就散", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=127" },
+    { title:"最美的期待", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=128" },
+    { title:"梦里花", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=129" }
+  ]},
+  { year:"2019", age:9, songs:[
+    { title:"红玫瑰", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=116" },
+    { title:"心如止水", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=117" },
+    { title:"年轮", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=118" },
+    { title:"我要你", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=119" },
+    { title:"路之遥", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=120" },
+    { title:"往日时光", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=121" }
+  ]},
+  { year:"2020", age:10, songs:[
+    { title:"给电影人的情书", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=110" },
+    { title:"Without You", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=112" },
+    { title:"我们的爱", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=113" },
+    { title:"有一种悲伤", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=114" },
+    { title:"九儿", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=115" }
+  ]},
+  { year:"2021", age:11, songs:[
+    { title:"I'll Always Love You", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=100" },
+    { title:"门前情思大碗茶", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=101" },
+    { title:"恰好", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=102" },
+    { title:"Hero", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=103" },
+    { title:"连名带姓", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=105" },
+    { title:"人啊", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=107" }
+  ]},
+  { year:"2022", age:12, songs:[
+    { title:"逆光", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=1" },
+    { title:"像风一样", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=2" },
+    { title:"永不失联的爱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=3" },
+    { title:"泡沫", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=4" },
+    { title:"我很快乐", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=5" },
+    { title:"人质", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=6" },
+    { title:"起风了", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=7" },
+    { title:"也许明天", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=8" },
+    { title:"传奇", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=9" },
+    { title:"洋葱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=10" },
+    { title:"My heart will go on", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=11" },
+    { title:"至少还有你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=12" },
+    { title:"星辰大海", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=13" },
+    { title:"路过人间", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=18" },
+    { title:"兰亭序", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=29" },
+    { title:"玫瑰少年", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=25" },
+    { title:"我的天空", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=26" },
+    { title:"一路生花", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=27" },
+    { title:"玫瑰玫瑰我爱你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=31" },
+    { title:"crazy", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=34" },
+    { title:"I Love You 3000", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=36" },
+    { title:"若把你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=38" },
+    { title:"远走高飞", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=39" }
+  ]},
+  { year:"2023", age:13, songs:[
+    { title:"光亮", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=42" },
+    { title:"阿楚姑娘", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=57" },
+    { title:"十二月的奇迹", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=41" },
+    { title:"如愿", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=45" },
+    { title:"篇章", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=46" },
+    { title:"岩石里的花", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=47" },
+    { title:"言不由衷", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=48" },
+    { title:"我的美丽", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=49" },
+    { title:"lose", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=51" },
+    { title:"Love In The Dark", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=58" },
+    { title:"one last time", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=59" },
+    { title:"天若有情", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=60" },
+    { title:"Forever Young", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=63" },
+    { title:"Make You Feel My Love", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=64" },
+    { title:"What Was I Made For", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=68" },
+    { title:"我离开我自己", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=70" },
+    { title:"我想", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=71" },
+    { title:"strangers by nature", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=72" },
+    { title:"退后", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=73" },
+    { title:"你给我听好", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=74" },
+    { title:"情非得已", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=76" },
+    { title:"想你时风起", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=77" },
+    { title:"小偷", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=79" },
+    { title:"Deja Vu", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=80" },
+    { title:"甜口良药", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=81" }
+  ]},
+  { year:"2024", age:14, songs:[
+    { title:"旅行中忘记", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=87" },
+    { title:"Paper Hearts", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=125" },
+    { title:"野花香", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=99" },
+    { title:"是你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=91" },
+    { title:"咸鱼", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=82" },
+    { title:"不亏不欠", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=83" },
+    { title:"恭喜恭喜", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=85" },
+    { title:"一直很安静", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=88" },
+    { title:"Bye", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=89" },
+    { title:"心酸", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=93" },
+    { title:"非我不可", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=94" },
+    { title:"雨天", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=96" },
+    { title:"二十二", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=98" },
+    { title:"落日只会道别", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=100" },
+    { title:"comedy", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=103" },
+    { title:"浪漫纯属虚构", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=124" },
+    { title:"水星记", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=106" },
+    { title:"阳光下的星星", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=105" },
+    { title:"If You", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=107" },
+    { title:"Love", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=108" },
+    { title:"Boy's a liar Pt. 2", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=109" },
+    { title:"Dancing with the Devil", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=110" },
+    { title:"distance", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=111" },
+    { title:"distance（2）", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=112" },
+    { title:"missin you", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=113" },
+    { title:"Prisoner", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=114" },
+    { title:"夜上海", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=116" },
+    { title:"自作曲（非自填词）", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=120" },
+    { title:"达尔文", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=118" },
+    { title:"明明", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=123" },
+    { title:"落叶归根", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=122" },
+    { title:"same girl", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=126" },
+    { title:"剪爱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=127" },
+    { title:"失恋循环", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=128" },
+    { title:"If I Ain't Got You", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=98" }
+  ]},
+  { year:"2025", age:15, songs:[
+    { title:"Trust Me", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=134" },
+    { title:"All I Want for Christmas Is You", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=129" },
+    { title:"继续-给十五岁的自己", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=130" },
+    { title:"左手指月", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=132" },
+    { title:"如果当时", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=136" },
+    { title:"Small Girl", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=135" },
+    { title:"Letting Go", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=138" },
+    { title:"行李", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=139" },
+    { title:"珠玉", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=140" },
+    { title:"卡拉永远OK", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=141" },
+    { title:"雨爱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=145" },
+    { title:"暮色回响", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=143" },
+    { title:"月亮代表我的心", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=150" },
+    { title:"Sorry Would Go a Long Way", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=151" },
+    { title:"Tears（原创）", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=152" }
+  ]},
+]
+
+function RuiMaiSection() {
+  return (
+    <div style={{position:"relative",paddingLeft:24}}>
+      <div style={{
+        position:"absolute",left:8,top:0,bottom:0,width:2,
+        background:"linear-gradient(to bottom,rgba(79,168,104,0.6),rgba(162,214,174,0.2))",
+        borderRadius:2,
+      }}/>
+      {RUIMAI_DATA.map((group,gi)=>(
+        <div key={group.year} style={{marginBottom:32,position:"relative"}}>
+          <div style={{position:"absolute",left:-28,top:3,width:16,height:16,borderRadius:"50%",background:"rgba(79,168,104,0.9)",border:"3px solid rgba(200,240,210,0.9)",boxShadow:"0 2px 8px rgba(40,100,56,0.3)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+            <span style={{fontSize:20,fontWeight:900,color:"var(--c-ink)",letterSpacing:"-0.02em"}}>{group.year}</span>
+            <span style={{fontSize:11,fontWeight:700,color:"rgba(79,168,104,0.9)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.4)",borderRadius:100,padding:"2px 10px"}}>{group.age}岁</span>
+            <span style={{fontSize:10,color:"var(--c-faint)"}}>{group.songs.length}首</span>
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {group.songs.map((song,si)=>(
+              <a key={si} href={song.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>
+                <div style={{
+                  padding:"5px 12px",borderRadius:100,fontSize:12,fontWeight:600,
+                  background:"rgba(240,250,243,0.7)",
+                  border:"1px solid rgba(195,228,206,0.5)",
+                  color:"var(--c-ink-2)",
+                  transition:"all 0.15s",whiteSpace:"nowrap",
+                }}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(162,214,174,0.35)";e.currentTarget.style.color="var(--c-ink)"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(240,250,243,0.7)";e.currentTarget.style.color="var(--c-ink-2)"}}>
+                  🎤 {song.title}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function GrowthSection({ onLightbox }) {
-  const tabs = ["星期五练习生","一颗好星星","PD的蛋生","四一有意思","喵生日记"]
+  const tabs = ["星期五练习生","一颗好星星","PD的蛋生","四一有意思","喵生日记","瑞麦🎤"]
   const [activeTab, setActiveTab] = useState("星期五练习生")
 
   const tabLabel = (t) => {
@@ -3574,6 +3765,7 @@ function GrowthSection({ onLightbox }) {
       </div>
 
       {activeTab==="喵生日记"&&<MiaoDiary/>}
+      {activeTab==="瑞麦🎤"&&<RuiMaiSection/>}
       {activeTab==="星期五练习生"&&<GrowthBiliTab data={XINGQI5_DATA} label="星期五练习生"/>}
       {activeTab==="一颗好星星"&&<GrowthBiliTab data={XINXING_DATA} label="一颗好星星"/>}
       {activeTab==="PD的蛋生"&&<GrowthBiliTab data={PD_DATA} label="PD的蛋生"/>}
