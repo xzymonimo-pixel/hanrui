@@ -3512,26 +3512,21 @@ function GrowthBiliTab({ data, label }) {
 
   return (
     <div>
-      {/* 月份横排筛选 */}
-      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14}}>
-        <button onClick={()=>setActiveMonth(null)} style={{
-          padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
-          border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
-          background:!activeMonth?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.5)",
-          color:!activeMonth?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
-        }}>全部 ({data.length})</button>
-        {sortedDates.map(date=>(
-          <button key={date} onClick={()=>setActiveMonth(date)} style={{
-            padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
-            border:`1px solid ${activeMonth===date?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
-            background:activeMonth===date?"rgba(162,214,174,0.35)":"rgba(240,250,243,0.5)",
-            color:activeMonth===date?"var(--c-ink)":"var(--c-muted)",transition:"all 0.15s",
-          }}>{date} <span style={{fontSize:9,opacity:0.6}}>({byDate[date].length})</span></button>
-        ))}
+      {/* 月份筛选 - 下拉选择器 */}
+      <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center"}}>
+        <select value={activeMonth||""} onChange={e=>setActiveMonth(e.target.value||null)}
+          style={{flex:1,padding:"6px 10px",borderRadius:10,fontSize:12,fontWeight:600,fontFamily:"inherit",
+            border:"1px solid rgba(195,228,206,0.6)",background:"rgba(240,250,243,0.8)",
+            color:"var(--c-ink)",cursor:"pointer",outline:"none"}}>
+          <option value="">全部 ({data.length})</option>
+          {sortedDates.map(date=>(
+            <option key={date} value={date}>{date} ({byDate[date].length})</option>
+          ))}
+        </select>
       </div>
 
       {/* 视频网格 */}
-      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+      <div className="growth-bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
@@ -5820,7 +5815,8 @@ export default function Home({ data }) {
           .tabs-scroll::-webkit-scrollbar{display:none!important}
 
           /* 网格两列 */
-          .bili-grid{grid-template-columns:repeat(2,1fr)!important;overflow:hidden!important}
+          .bili-grid{grid-template-columns:repeat(2,1fr)!important}
+          .growth-bili-grid{grid-template-columns:repeat(2,1fr)!important}
 
           /* 月份导航手机端变为顶部折叠条 */
           .month-nav{width:100%!important;flex:none!important;order:-1!important;margin-bottom:10px}
