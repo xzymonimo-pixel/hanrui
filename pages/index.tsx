@@ -2,7 +2,7 @@ import fs from "fs"
 import path from "path"
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 
-const toCloudinary = (p) => p ? `https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/${p.replace(/^\/?(public\/)?/, "")}` : ""
+const toImageKit = (p) => p ? `https://ik.imagekit.io/ruihouse/hanrui/public/${p.replace(/^\/?(public\/)?/, "")}` : ""
 
 // ════════════════════════════════════════════
 //  getStaticProps
@@ -46,39 +46,48 @@ export async function getStaticProps() {
   }
 
   const https_mod = require("https")
-  function cloudinaryPage(prefix, cursor) {
+  function imagekitPage(skip) {
     return new Promise((resolve) => {
-      const p: Record<string, string> = { prefix, max_results: "500", type: "upload" }
-      if (cursor) p.next_cursor = cursor
-      const params = new URLSearchParams(p)
+      const params = new URLSearchParams({ skip: String(skip), limit: "1000", includeFolder: "false" })
       const options = {
-        hostname: "api.cloudinary.com",
-        path: `/v1_1/demfj39xl/resources/image/upload?${params}`,
-        headers: { Authorization: "Basic " + Buffer.from("614619994392318:gNr5SzuAfpSGHWmYKxHYcZPUOiU").toString("base64") }
+        hostname: "api.imagekit.io",
+        path: `/v1/files?${params}`,
+        headers: { Authorization: "Basic " + Buffer.from((process.env.IMAGEKIT_PRIVATE_KEY || "") + ":").toString("base64") }
       }
       const req = https_mod.request(options, res => {
         let b = ""
         res.on("data", d => b += d)
-        res.on("end", () => { try { resolve(JSON.parse(b) as any) } catch { resolve({resources:[]}) } })
+        res.on("end", () => { try { resolve(JSON.parse(b) as any) } catch { resolve([]) } })
       })
-      req.on("error", () => resolve({resources:[]}))
+      req.on("error", () => resolve([]))
       req.end()
     })
   }
 
   let allResources = []
-  let cursor = null
-  do {
-    const page = await cloudinaryPage("hanrui/public/20", cursor)
-    allResources = allResources.concat((page as any).resources || [])
-    cursor = (page as any).next_cursor || null
-  } while (cursor)
-  const monthSet = Array.from(new Set(allResources.map((r:any) => r.public_id.split("/")[2]))).filter((m:any) => /^\d{4}-\d{2}$/.test(m)).sort((a:any,b:any) => a.localeCompare(b))
+  let skip = 0
+  while (true) {
+    const page = await imagekitPage(skip) as any[]
+    if (!Array.isArray(page) || page.length === 0) break
+    const filtered = page.filter((r:any) => /^hanrui_public_20\d{2}-\d{2}_/.test(r.name))
+    allResources = allResources.concat(filtered)
+    if (page.length < 1000) break
+    skip += 1000
+  }
+
+  function extractMonth(name: string): string | null {
+    const m = name.match(/^hanrui_public_(\d{4}-\d{2})_/)
+    return m ? m[1] : null
+  }
+
+  const monthSet = Array.from(new Set(
+    allResources.map((r:any) => extractMonth(r.name)).filter(Boolean)
+  )).sort((a:any, b:any) => a.localeCompare(b))
 
   const weibo = monthSet.map(month => {
-    const monthResources = allResources.filter(r => r.public_id.includes(`/${month}/`))
-    const imageFiles = monthResources.map(r => ({ url: `https://res.cloudinary.com/demfj39xl/image/upload/f_auto,q_auto/${r.public_id}.${r.format||'jpg'}`, filename: r.public_id.split("/").pop(), isVideo: false }))
-    return { month, images: imageFiles.map(r => r.url), imageFiles }
+    const monthResources = allResources.filter((r:any) => extractMonth(r.name) === month)
+    const imageFiles = monthResources.map((r:any) => ({ url: r.url, filename: r.name, isVideo: false }))
+    return { month, images: imageFiles.map((r:any) => r.url), imageFiles }
   })
 
   // 周边五分类
@@ -87,7 +96,7 @@ export async function getStaticProps() {
     try {
       return fs.readdirSync(dir)
         .filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i))
-        .map(f => toCloudinary(`/merch/${subName}/${f}`))
+        .map(f => toImageKit(`/merch/${subName}/${f}`))
     } catch { return [] }
   }
   const merchCategories = {
@@ -3486,6 +3495,197 @@ const SIYI_DATA = [
   { bvid:"BV1i4Gq6YE35", title:"07: 福如大海", cover:"http://i1.hdslb.com/bfs/archive/5edc522711a84659e0fa75af8ec6d961e651af7e.jpg", url:"https://www.bilibili.com/video/BV1i4Gq6YE35/", date:"2026-05", tags:[] },
 ]
 
+// 瑞麦时间线数据（虚拟演示）
+const RUIMAI_DATA = [
+  { year:"2017", age:7, songs:[
+    { title:"丑八怪", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=130" },
+    { title:"你怎么舍得我难过", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=131" },
+    { title:"张三的歌", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=132" },
+    { title:"玫瑰香", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=133" }
+,
+    { title:"阿楚姑娘", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=66" },
+    { title:"唱脸谱", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=70" },
+    { title:"Pink Venom", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=71" },
+    { title:"Mascara", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=72" }
+  ]},
+  { year:"2018", age:8, songs:[
+    { title:"鹿 be free", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=123" },
+    { title:"倒数", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=124" },
+    { title:"天黑黑", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=125" },
+    { title:"说散就散", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=127" },
+    { title:"最美的期待", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=128" },
+    { title:"梦里花", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=129" }
+  ]},
+  { year:"2019", age:9, songs:[
+    { title:"红玫瑰", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=116" },
+    { title:"心如止水", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=117" },
+    { title:"年轮", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=118" },
+    { title:"我要你", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=119" },
+    { title:"路之遥", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=120" },
+    { title:"往日时光", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=121" }
+  ]},
+  { year:"2020", age:10, songs:[
+    { title:"给电影人的情书", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=110" },
+    { title:"Without You", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=112" },
+    { title:"我们的爱", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=113" },
+    { title:"有一种悲伤", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=114" },
+    { title:"九儿", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=115" }
+  ]},
+  { year:"2021", age:11, songs:[
+    { title:"I'll Always Love You", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=100" },
+    { title:"门前情思大碗茶", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=101" },
+    { title:"恰好", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=102" },
+    { title:"Hero", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=103" },
+    { title:"连名带姓", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=105" },
+    { title:"人啊", url:"https://www.bilibili.com/video/BV1L24y1k7po/?p=107" }
+  ]},
+  { year:"2022", age:12, songs:[
+    { title:"逆光", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=1" },
+    { title:"像风一样", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=2" },
+    { title:"永不失联的爱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=3" },
+    { title:"泡沫", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=4" },
+    { title:"我很快乐", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=5" },
+    { title:"人质", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=6" },
+    { title:"起风了", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=7" },
+    { title:"也许明天", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=8" },
+    { title:"传奇", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=9" },
+    { title:"洋葱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=10" },
+    { title:"My heart will go on", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=11" },
+    { title:"至少还有你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=12" },
+    { title:"星辰大海", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=13" },
+    { title:"路过人间", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=18" },
+    { title:"兰亭序", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=29" },
+    { title:"玫瑰少年", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=25" },
+    { title:"我的天空", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=26" },
+    { title:"一路生花", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=27" },
+    { title:"玫瑰玫瑰我爱你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=31" },
+    { title:"crazy", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=34" },
+    { title:"I Love You 3000", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=36" },
+    { title:"若把你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=38" },
+    { title:"远走高飞", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=39" }
+  ]},
+  { year:"2023", age:13, songs:[
+    { title:"光亮", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=42" },
+    { title:"阿楚姑娘", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=57" },
+    { title:"十二月的奇迹", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=41" },
+    { title:"如愿", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=45" },
+    { title:"篇章", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=46" },
+    { title:"岩石里的花", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=47" },
+    { title:"言不由衷", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=48" },
+    { title:"我的美丽", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=49" },
+    { title:"lose", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=51" },
+    { title:"Love In The Dark", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=58" },
+    { title:"one last time", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=59" },
+    { title:"天若有情", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=60" },
+    { title:"Forever Young", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=63" },
+    { title:"Make You Feel My Love", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=64" },
+    { title:"What Was I Made For", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=68" },
+    { title:"我离开我自己", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=70" },
+    { title:"我想", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=71" },
+    { title:"strangers by nature", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=72" },
+    { title:"退后", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=73" },
+    { title:"你给我听好", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=74" },
+    { title:"情非得已", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=76" },
+    { title:"想你时风起", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=77" },
+    { title:"小偷", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=79" },
+    { title:"Deja Vu", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=80" },
+    { title:"甜口良药", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=81" }
+  ]},
+  { year:"2024", age:14, songs:[
+    { title:"旅行中忘记", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=87" },
+    { title:"Paper Hearts", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=125" },
+    { title:"野花香", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=99" },
+    { title:"是你", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=91" },
+    { title:"咸鱼", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=82" },
+    { title:"不亏不欠", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=83" },
+    { title:"恭喜恭喜", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=85" },
+    { title:"一直很安静", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=88" },
+    { title:"Bye", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=89" },
+    { title:"心酸", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=93" },
+    { title:"非我不可", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=94" },
+    { title:"雨天", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=96" },
+    { title:"二十二", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=98" },
+    { title:"落日只会道别", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=100" },
+    { title:"comedy", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=103" },
+    { title:"浪漫纯属虚构", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=124" },
+    { title:"水星记", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=106" },
+    { title:"阳光下的星星", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=105" },
+    { title:"If You", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=107" },
+    { title:"Love", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=108" },
+    { title:"Boy's a liar Pt. 2", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=109" },
+    { title:"Dancing with the Devil", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=110" },
+    { title:"distance", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=111" },
+    { title:"distance（2）", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=112" },
+    { title:"missin you", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=113" },
+    { title:"Prisoner", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=114" },
+    { title:"夜上海", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=116" },
+    { title:"自作曲（非自填词）", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=120" },
+    { title:"达尔文", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=118" },
+    { title:"明明", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=123" },
+    { title:"落叶归根", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=122" },
+    { title:"same girl", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=126" },
+    { title:"剪爱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=127" },
+    { title:"失恋循环", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=128" },
+    { title:"If I Ain't Got You", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=98" }
+  ]},
+  { year:"2025", age:15, songs:[
+    { title:"Trust Me", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=134" },
+    { title:"All I Want for Christmas Is You", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=129" },
+    { title:"继续-给十五岁的自己", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=130" },
+    { title:"左手指月", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=132" },
+    { title:"如果当时", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=136" },
+    { title:"Small Girl", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=135" },
+    { title:"Letting Go", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=138" },
+    { title:"行李", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=139" },
+    { title:"珠玉", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=140" },
+    { title:"卡拉永远OK", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=141" },
+    { title:"雨爱", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=145" },
+    { title:"暮色回响", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=143" },
+    { title:"月亮代表我的心", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=150" },
+    { title:"Sorry Would Go a Long Way", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=151" },
+    { title:"Tears（原创）", url:"https://www.bilibili.com/video/BV1seKPeZESo/?p=152" }
+  ]},
+]
+
+function RuiMaiSection() {
+  return (
+    <div style={{position:"relative",paddingLeft:24}}>
+      <div style={{
+        position:"absolute",left:8,top:0,bottom:0,width:2,
+        background:"linear-gradient(to bottom,rgba(79,168,104,0.6),rgba(162,214,174,0.2))",
+        borderRadius:2,
+      }}/>
+      {RUIMAI_DATA.map((group,gi)=>(
+        <div key={group.year} style={{marginBottom:32,position:"relative"}}>
+          <div style={{position:"absolute",left:-28,top:3,width:16,height:16,borderRadius:"50%",background:"rgba(79,168,104,0.9)",border:"3px solid rgba(200,240,210,0.9)",boxShadow:"0 2px 8px rgba(40,100,56,0.3)"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+            <span style={{fontSize:20,fontWeight:900,color:"var(--c-ink)",letterSpacing:"-0.02em"}}>{group.year}</span>
+            <span style={{fontSize:11,fontWeight:700,color:"rgba(79,168,104,0.9)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.4)",borderRadius:100,padding:"2px 10px"}}>{group.age}岁</span>
+            <span style={{fontSize:10,color:"var(--c-faint)"}}>{group.songs.length}首</span>
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {group.songs.map((song,si)=>(
+              <a key={si} href={song.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>
+                <div style={{
+                  padding:"5px 12px",borderRadius:100,fontSize:12,fontWeight:600,
+                  background:"rgba(240,250,243,0.7)",
+                  border:"1px solid rgba(195,228,206,0.5)",
+                  color:"var(--c-ink-2)",
+                  transition:"all 0.15s",whiteSpace:"nowrap",
+                }}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(162,214,174,0.35)";e.currentTarget.style.color="var(--c-ink)"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(240,250,243,0.7)";e.currentTarget.style.color="var(--c-ink-2)"}}>
+                  🎤 {song.title}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function GrowthBiliTab({ data, label }) {
   const [activeMonth, setActiveMonth] = useState<string|null>(null)
 
@@ -3533,11 +3733,11 @@ function GrowthBiliTab({ data, label }) {
 //  成长录 Section
 // ════════════════════════════════════════════
 function GrowthSection({ onLightbox }) {
-  const tabs = ["星期五练习生","一颗好星星","PD的蛋生","四一有意思","喵生日记"]
+  const tabs = ["星期五练习生","一颗好星星","PD的蛋生","四一有意思","喵生日记","瑞麦🎤"]
   const [activeTab, setActiveTab] = useState("星期五练习生")
 
   const tabLabel = (t) => {
-    const map = {"星期五练习生":"📅 星期五练习生","一颗好星星":"⭐ 一颗好星星","PD的蛋生":"🥚 PD的蛋生","四一有意思":"🎯 四一有意思","喵生日记":"🐱 喵生日记"}
+    const map = {"星期五练习生":"📅 星期五练习生","一颗好星星":"⭐ 一颗好星星","PD的蛋生":"🥚 PD的蛋生","四一有意思":"🎯 四一有意思","喵生日记":"🐱 喵生日记","瑞麦🎤":"🎤 瑞麦"}
     return map[t] || t
   }
 
@@ -3565,6 +3765,7 @@ function GrowthSection({ onLightbox }) {
       </div>
 
       {activeTab==="喵生日记"&&<MiaoDiary/>}
+      {activeTab==="瑞麦🎤"&&<RuiMaiSection/>}
       {activeTab==="星期五练习生"&&<GrowthBiliTab data={XINGQI5_DATA} label="星期五练习生"/>}
       {activeTab==="一颗好星星"&&<GrowthBiliTab data={XINXING_DATA} label="一颗好星星"/>}
       {activeTab==="PD的蛋生"&&<GrowthBiliTab data={PD_DATA} label="PD的蛋生"/>}
@@ -4211,6 +4412,700 @@ function TravelSection() {
 // ════════════════════════════════════════════
 //  About This Website
 // ════════════════════════════════════════════
+
+// ════════════════════════════════════════════
+//  CatTowerSection — 猫爬架
+// ════════════════════════════════════════════
+// 用于匹配的路径片段，格式：年月_日期文件名
+const CAT_PATHS = [
+  "2026-05_2026-05-13_21-08-29_3","2026-05_2026-05-20_23-39-22_5",
+  "2026-04_2026-04-04_22-25-09_15","2026-01_2026-01-29_09-00-02_5",
+  "2026-01_2026-01-29_09-00-02_6","2026-01_2026-01-07_20-59-57_3",
+  "2026-01_2026-01-29_09-00-02_4","2026-01_2026-01-29_09-00-02_12",
+  "2026-01_2026-01-29_09-00-02_9","2026-02_2026-02-14_21-41-08_6",
+  "2026-01_2026-01-14_22-01-43_5","2026-05_2026-05-13_21-08-29_5",
+  "2026-03_2026-03-10_21-34-28_6","2026-04_2026-04-04_22-25-09_1",
+  "2026-01_2026-01-29_09-00-02_2","2025-07_2025-07-06_20-30-05",
+  "2025-08_2025-08-10_19-42-47","2025-03_2025-03-29_18-38-22_3",
+  "2025-11_2025-11-27_21-05-31_9","2025-09_2025-09-23_21-35-04_4",
+  "2025-03_2025-03-22_11-40-04_1","2025-09_2025-09-23_21-35-04_8",
+  "2025-06_2025-06-20_21-50-23_9","2025-08_2025-08-16_10-08-20_6",
+  "2025-04_2025-04-12_19-51-27_7","2025-02_2025-02-09_22-16-28_6",
+  "2025-08_2025-08-12_17-47-37_1","2025-03_2025-03-29_18-38-22_1",
+  "2025-10_2025-10-29_21-47-03_2","2025-02_2025-02-09_22-16-28_4",
+  "2025-08_2025-08-12_17-47-37_5","2024-01_2024-01-06_23-42-49_1",
+  "2024-09_2024-09-22_20-26-56_4","2024-02_2024-02-04_17-06-02_1",
+  "2024-04_2024-04-23_22-05-15_3","2024-01_2024-01-02_22-34-59_2",
+  "2024-02_2024-02-29_20-47-07_1","2024-01_2024-01-16_23-19-25_4",
+  "2024-09_2024-09-07_22-16-23_2","2024-04_2024-04-28_20-38-19_2",
+  "2024-09_2024-09-22_20-26-56_3","2024-02_2024-02-11_21-48-53_5",
+  "2024-09_2024-09-22_20-26-56_2","2024-02_2024-02-09_22-33-31_1",
+  "2024-01_2024-01-29_22-12-37_9","2024-11_2024-11-05_21-15-52_10",
+  "2024-01_2024-01-29_22-12-37_2","2024-01_2024-01-06_23-42-49_2",
+  "2023-07_2023-07-01_19-51-31","2023-11_2023-11-05_20-14-10_2",
+  "2023-10_2023-10-10_21-41-39_5","2023-07_2023-07-21_14-59-22_1",
+  "2023-08_2023-08-05_17-58-48_1","2023-10_2023-10-10_21-41-39_8",
+  "2023-06_2023-06-25_20-42-37_2","2023-08_2023-08-05_17-58-48_2",
+  "2023-12_2023-12-23_22-29-29_3","2023-01_2023-01-26_14-19-21_1",
+  "2023-11_2023-11-01_22-22-08_2","2023-11_2023-11-12_22-29-28_3",
+  "2023-04_2023-04-30_22-44-25_1","2023-10_2023-10-06_21-25-40_3",
+  "2023-11_2023-11-01_22-22-08_4","2023-11_2023-11-19_22-33-45_2",
+  "2023-02_2023-02-14_19-45-52_2","2023-12_2023-12-15_23-11-08_5",
+  "2023-12_2023-12-04_22-11-47_9","2023-11_2023-11-01_22-22-08_1",
+  "2023-04_2023-04-13_23-11-05_2","2023-12_2023-12-28_23-02-31_6",
+  "2023-04_2023-04-30_22-44-25_3","2022-05_2022-05-20_18-24-07_1",
+  "2022-11_2022-11-28_20-06-37_5","2022-04_2022-04-27_18-58-32_3",
+  "2022-10_2022-10-07_17-19-40_5",
+]
+
+const IK_BASE = "https://ik.imagekit.io/ruihouse/"
+
+function extractDateFromName(name: string): { year: string; month: string } | null {
+  const m = name.match(/_(\d{4})-(\d{2})_/)
+  return m ? { year: m[1], month: m[2] } : null
+}
+
+function CatGameSection({ weibo }: { weibo: any[] }) {
+  const [gameState, setGameState] = useState<"playing"|"result">("playing")
+  const [stage, setStage] = useState<1|2|3>(1)
+  const [currentImg, setCurrentImg] = useState<string>("")
+  const [dateInfo, setDateInfo] = useState<{year:string;month:string}|null>(null)
+  const [yearCorrect, setYearCorrect] = useState(false)
+  const [yearOptions, setYearOptions] = useState<string[]>([])
+  const [monthOptions, setMonthOptions] = useState<string[]>([])
+  const [selectedYear, setSelectedYear] = useState<string>("")
+  const [selectedMonth, setSelectedMonth] = useState<string>("")
+  const [win, setWin] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imgRef = useRef<HTMLImageElement|null>(null)
+
+  function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
+
+  function getYearOptions(correct: string): string[] {
+    const all = [...new Set(CAT_PATHS.map(n => n.match(/^(\d{4})-\d{2}_/)?.[1]).filter(Boolean))] as string[]
+    const wrong = shuffle(all.filter(y => y !== correct)).slice(0, 3)
+    return shuffle([correct, ...wrong])
+  }
+
+  function getMonthOptions(correct: string): string[] {
+    const months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+    const wrong = shuffle(months.filter(m => m !== correct)).slice(0, 3)
+    return shuffle([correct, ...wrong])
+  }
+
+  function drawPixelated(img: HTMLImageElement, blockSize: number) {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    const tmp = document.createElement("canvas")
+    tmp.width = Math.max(1, Math.floor(canvas.width / blockSize))
+    tmp.height = Math.max(1, Math.floor(canvas.height / blockSize))
+    const tc = tmp.getContext("2d")!
+    tc.imageSmoothingEnabled = false
+    tc.drawImage(img, 0, 0, tmp.width, tmp.height)
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height)
+  }
+
+  function drawClear(img: HTMLImageElement) {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    ctx.imageSmoothingEnabled = true
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  }
+
+  function findImageUrl(pathKey: string): string | null {
+    // pathKey 格式: "2026-05_2026-05-13_21-08-29_3"
+    // weibo 里 filename 格式: "hanrui_public_2026-05_2026-05-13_21-08-29_3_abc123.jpg"
+    for (const month of weibo) {
+      for (const item of (month.imageFiles || [])) {
+        if (item.filename && item.filename.includes(pathKey)) {
+          return item.url
+        }
+      }
+    }
+    return null
+  }
+
+  function startGame() {
+    const shuffled = [...CAT_PATHS].sort(() => Math.random() - 0.5)
+    let pick = ""
+    let url = ""
+    for (const p of shuffled) {
+      const found = findImageUrl(p)
+      if (found) { pick = p; url = found; break }
+    }
+    if (!pick) return
+
+    const m = pick.match(/^(\d{4})-(\d{2})_/)
+    if (!m) return
+    const date = { year: m[1], month: m[2] }
+
+    setCurrentImg(url)
+    setDateInfo(date)
+    setStage(1)
+    setGameState("playing")
+    setSelectedYear("")
+    setSelectedMonth("")
+    setYearCorrect(false)
+    setWin(false)
+    setYearOptions(getYearOptions(date.year))
+    setMonthOptions(getMonthOptions(date.month))
+
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    img.src = url
+    img.onload = () => {
+      imgRef.current = img
+      const canvas = canvasRef.current
+      if (canvas) {
+        canvas.width = img.naturalWidth || 420
+        canvas.height = img.naturalHeight || 420
+      }
+      drawPixelated(img, 30)
+    }
+    img.onerror = () => {
+      imgRef.current = img
+      const canvas = canvasRef.current
+      if (!canvas) return
+      const ctx = canvas.getContext("2d")
+      if (!ctx) return
+      ctx.fillStyle = "rgba(200,230,210,0.3)"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
+  }
+
+  useEffect(() => { startGame() }, [])
+
+  function handleYearAnswer(chosen: string) {
+    setSelectedYear(chosen)
+    const correct = chosen === dateInfo?.year
+    setYearCorrect(correct)
+    setTimeout(() => {
+      if (imgRef.current) drawPixelated(imgRef.current, 8)
+      setStage(2)
+    }, 700)
+  }
+
+  function handleMonthAnswer(chosen: string) {
+    setSelectedMonth(chosen)
+    const monthCorrect = chosen === dateInfo?.month
+    setWin(yearCorrect && monthCorrect)
+    setTimeout(() => {
+      if (imgRef.current) drawClear(imgRef.current)
+      setStage(3)
+      setGameState("result")
+    }, 700)
+  }
+
+  const stageLabel = stage === 1 ? "第一阶段 · 极度模糊" : stage === 2 ? "第二阶段 · 半清晰" : "揭秘！"
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,padding:"8px 0"}}>
+      {/* 进度条 */}
+      <div style={{display:"flex",gap:6,width:"100%",maxWidth:420}}>
+        {[1,2,3].map(s => (
+          <div key={s} style={{flex:1,height:3,borderRadius:2,background:stage>=s?"rgba(100,180,120,0.8)":"rgba(200,220,200,0.3)",transition:"background 0.4s"}}/>
+        ))}
+      </div>
+
+      {/* 画布 */}
+      <div style={{width:"100%",maxWidth:420,borderRadius:14,overflow:"hidden",border:"1.5px solid rgba(195,228,206,0.5)",background:"rgba(240,250,243,0.3)"}}>
+        <canvas ref={canvasRef} width={420} height={420} style={{width:"100%",height:"auto",display:"block"}}/>
+      </div>
+
+      <div style={{fontSize:12,color:"var(--c-muted)",letterSpacing:"0.5px"}}>{stageLabel}</div>
+
+      {/* 第一阶段：猜年 */}
+      {stage === 1 && gameState === "playing" && (
+        <>
+          <div style={{fontSize:15,fontWeight:700,color:"var(--c-ink)",textAlign:"center"}}>猜猜这是哪一年的张函瑞？</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,width:"100%",maxWidth:420}}>
+            {yearOptions.map(y => (
+              <button key={y} onClick={()=>handleYearAnswer(y)} disabled={!!selectedYear}
+                style={{padding:"10px 0",borderRadius:10,border:`1.5px solid ${selectedYear===y?(y===dateInfo?.year?"rgba(100,180,120,0.8)":"rgba(220,80,80,0.6)"):selectedYear&&y===dateInfo?.year?"rgba(100,180,120,0.8)":"rgba(195,228,206,0.5)"}`,
+                background:selectedYear===y?(y===dateInfo?.year?"rgba(200,240,210,0.6)":"rgba(255,220,220,0.4)"):selectedYear&&y===dateInfo?.year?"rgba(200,240,210,0.6)":"rgba(240,250,243,0.4)",
+                color:"var(--c-ink)",fontSize:14,fontWeight:600,cursor:selectedYear?"default":"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+                {y} 年
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 第二阶段：猜月 */}
+      {stage === 2 && gameState === "playing" && (
+        <>
+          <div style={{fontSize:15,fontWeight:700,color:"var(--c-ink)",textAlign:"center"}}>猜猜是哪一月的张函瑞？</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,width:"100%",maxWidth:420}}>
+            {monthOptions.map(mo => (
+              <button key={mo} onClick={()=>handleMonthAnswer(mo)} disabled={!!selectedMonth}
+                style={{padding:"10px 0",borderRadius:10,border:`1.5px solid ${selectedMonth===mo?(mo===dateInfo?.month?"rgba(100,180,120,0.8)":"rgba(220,80,80,0.6)"):selectedMonth&&mo===dateInfo?.month?"rgba(100,180,120,0.8)":"rgba(195,228,206,0.5)"}`,
+                background:selectedMonth===mo?(mo===dateInfo?.month?"rgba(200,240,210,0.6)":"rgba(255,220,220,0.4)"):selectedMonth&&mo===dateInfo?.month?"rgba(200,240,210,0.6)":"rgba(240,250,243,0.4)",
+                color:"var(--c-ink)",fontSize:14,fontWeight:600,cursor:selectedMonth?"default":"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+                {mo} 月
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 结果 */}
+      {gameState === "result" && (
+        <div style={{width:"100%",maxWidth:420,padding:"16px 20px",borderRadius:14,border:`1.5px solid ${win?"rgba(100,180,120,0.6)":"rgba(220,80,80,0.4)"}`,background:win?"rgba(200,240,210,0.3)":"rgba(255,220,220,0.2)",textAlign:"center"}}>
+          <div style={{fontSize:16,fontWeight:800,color:win?"rgba(60,140,80,1)":"rgba(180,60,60,1)",marginBottom:6}}>
+            {win ? "恭喜你，你猜对了！" : "很遗憾，你猜错了"}
+          </div>
+          <div style={{fontSize:13,color:"var(--c-muted)",marginBottom:14}}>
+            {win
+              ? `你简直是瑞圈考古专家吧！这是 ${dateInfo?.year} 年 ${dateInfo?.month} 月的张函瑞 🏆`
+              : `这是 ${dateInfo?.year} 年 ${dateInfo?.month} 月的张函瑞，不过别灰心，再玩一次！`
+            }
+          </div>
+          <button onClick={startGame} style={{padding:"9px 28px",borderRadius:100,border:"1.5px solid rgba(195,228,206,0.6)",background:"rgba(240,250,243,0.5)",color:"var(--c-accent)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+            再玩一次 ↩
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+// ════════════════════════════════════════════
+//  CardDrawSection — 发现🐱抽卡游戏
+// ════════════════════════════════════════════
+const CARDS = [
+  { name: "lovely瑞",  url: "https://ik.imagekit.io/ruihouse/cards/lovely瑞_oK4YWIX1c.jpg" },
+  { name: "只要有你瑞", url: "https://ik.imagekit.io/ruihouse/cards/只要有你瑞_IqDhEN8dM.jpg" },
+  { name: "围巾瑞",    url: "https://ik.imagekit.io/ruihouse/cards/围巾瑞_TqAtal-W0.jpg" },
+  { name: "庄天枢瑞",  url: "https://ik.imagekit.io/ruihouse/cards/庄天枢瑞_NQ1yqy8tA.jpg" },
+  { name: "拍立得瑞",  url: "https://ik.imagekit.io/ruihouse/cards/拍立得瑞_VPBqz-VIk.jpg" },
+  { name: "旅行瑞",    url: "https://ik.imagekit.io/ruihouse/cards/旅行瑞_sOpU_xvFS.jpg" },
+  { name: "毛团瑞",    url: "https://ik.imagekit.io/ruihouse/cards/毛团瑞_EIQYJgfZN.jpg" },
+  { name: "猜歌瑞",    url: "https://ik.imagekit.io/ruihouse/cards/猜歌瑞_dzr4uRY5z.jpg" },
+  { name: "生日瑞",    url: "https://ik.imagekit.io/ruihouse/cards/生日瑞_1jZsB7snF.jpg" },
+  { name: "粉衣瑞",    url: "https://ik.imagekit.io/ruihouse/cards/粉衣瑞_xM62_1pMK.jpg" },
+  { name: "进行曲瑞",  url: "https://ik.imagekit.io/ruihouse/cards/进行曲瑞_8xnh2r2se.jpg" },
+  { name: "黄昏晓瑞",  url: "https://ik.imagekit.io/ruihouse/cards/黄昏晓瑞_2amqZ2Q0P.jpg" },
+]
+
+const CARD_BACK = "https://ik.imagekit.io/ruihouse/cards/lovely瑞_oK4YWIX1c.jpg"
+
+function CardDrawSection() {
+  const TODAY = new Date().toISOString().slice(0, 10)
+  const LS_DRAW_KEY = "rui_draw_date"
+  const LS_COLLECTION_KEY = "rui_card_collection"
+
+  function getCollection(): string[] {
+    try { return JSON.parse(localStorage.getItem(LS_COLLECTION_KEY) || "[]") } catch { return [] }
+  }
+  function saveCollection(col: string[]) {
+    localStorage.setItem(LS_COLLECTION_KEY, JSON.stringify([...new Set(col)]))
+  }
+  function hasDrawnToday(): boolean {
+    try { return localStorage.getItem(LS_DRAW_KEY) === TODAY } catch { return false }
+  }
+  function markDrawnToday() {
+    localStorage.setItem(LS_DRAW_KEY, TODAY)
+  }
+
+  const [phase, setPhase] = useState<"select"|"reveal"|"locked"|"album">("select")
+  const [displayed, setDisplayed] = useState<{name:string,url:string}[]>([])
+  const [result, setResult] = useState<{name:string,url:string}|null>(null)
+  const [flipping, setFlipping] = useState<number|null>(null)
+  const [collection, setCollection] = useState<string[]>([])
+  const [lightboxCard, setLightboxCard] = useState<{name:string,url:string}|null>(null)
+
+  function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
+
+  useEffect(() => {
+    const col = getCollection()
+    setCollection(col)
+    if (hasDrawnToday()) {
+      setPhase("locked")
+    } else {
+      const picked = shuffle(CARDS).slice(0, 6)
+      setDisplayed(picked)
+      setPhase("select")
+    }
+  }, [])
+
+  function selectCard(idx: number) {
+    if (phase !== "select") return
+    setFlipping(idx)
+    setTimeout(() => {
+      const card = displayed[idx]
+      setResult(card)
+      markDrawnToday()
+      const newCol = [...getCollection(), card.name]
+      saveCollection(newCol)
+      setCollection(newCol)
+      setPhase("reveal")
+    }, 600)
+  }
+
+  const collectedCards = CARDS.filter(c => collection.includes(c.name))
+  const uncollectedCount = CARDS.length - collectedCards.length
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:20,padding:"8px 0"}}>
+
+      {/* 顶部切换：抽卡 / 卡册 */}
+      <div style={{display:"flex",gap:8,width:"100%",maxWidth:420}}>
+        <button onClick={()=>setPhase(hasDrawnToday()?"locked":"select")}
+          style={{flex:1,padding:"7px 0",borderRadius:100,border:`1.5px solid ${phase!=="album"?"rgba(100,180,120,0.7)":"rgba(195,228,206,0.4)"}`,
+          background:phase!=="album"?"rgba(200,240,210,0.5)":"rgba(240,250,243,0.3)",
+          color:phase!=="album"?"rgba(50,130,70,1)":"var(--c-muted)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+          🎴 今日抽卡
+        </button>
+        <button onClick={()=>setPhase("album")}
+          style={{flex:1,padding:"7px 0",borderRadius:100,border:`1.5px solid ${phase==="album"?"rgba(100,180,120,0.7)":"rgba(195,228,206,0.4)"}`,
+          background:phase==="album"?"rgba(200,240,210,0.5)":"rgba(240,250,243,0.3)",
+          color:phase==="album"?"rgba(50,130,70,1)":"var(--c-muted)",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+          📖 我的卡册 {collectedCards.length}/{CARDS.length}
+        </button>
+      </div>
+
+      {/* 今天已抽过 */}
+      {phase === "locked" && (
+        <div style={{textAlign:"center",padding:"30px 20px",borderRadius:14,border:"1.5px solid rgba(195,228,206,0.5)",background:"rgba(240,250,243,0.4)",width:"100%",maxWidth:420}}>
+          <div style={{fontSize:28,marginBottom:8}}>🌙</div>
+          <div style={{fontSize:15,fontWeight:700,color:"var(--c-ink)",marginBottom:6}}>今天已经抽过啦</div>
+          <div style={{fontSize:13,color:"var(--c-muted)"}}>明天再来抽新的瑞吧～每天一次机会</div>
+        </div>
+      )}
+
+      {/* 选卡阶段 */}
+      {phase === "select" && (
+        <>
+          <div style={{fontSize:14,color:"var(--c-muted)",textAlign:"center"}}>选择一张卡，看看今天的瑞是谁 ✨</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,width:"100%",maxWidth:420}}>
+            {displayed.map((card, idx) => (
+              <div key={idx} onClick={() => selectCard(idx)}
+                style={{cursor:"pointer",borderRadius:12,overflow:"hidden",
+                  border:"1.5px solid rgba(195,228,206,0.5)",aspectRatio:"1/1.6",
+                  background:"rgba(200,230,210,0.2)",
+                  transform:flipping===idx?"rotateY(90deg)":"rotateY(0deg)",
+                  transition:"transform 0.3s ease",
+                  display:"flex",alignItems:"center",justifyContent:"center"}}
+                onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform="scale(1.05)"}}
+                onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform="scale(1)"}}>
+                <div style={{width:"100%",height:"100%",
+                  background:"linear-gradient(135deg,rgba(180,220,190,0.4),rgba(210,240,218,0.3))",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8}}>
+                  <div style={{fontSize:28}}>🐱</div>
+                  <div style={{fontSize:11,color:"var(--c-muted)"}}>点击翻牌</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 揭示结果 */}
+      {phase === "reveal" && result && (
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16,width:"100%",maxWidth:320}}>
+          <div style={{borderRadius:16,overflow:"hidden",
+            border:"2px solid rgba(100,180,120,0.5)",
+            boxShadow:"0 8px 32px rgba(100,180,120,0.2)",
+            width:"100%",animation:"cardReveal 0.5s ease"}}>
+            <img src={result.url} alt={result.name} style={{width:"100%",display:"block",mixBlendMode:"multiply"}} loading="lazy"/>
+          </div>
+          <div style={{padding:"14px 24px",borderRadius:14,
+            background:"rgba(200,240,210,0.4)",border:"1.5px solid rgba(100,180,120,0.4)",
+            textAlign:"center",width:"100%"}}>
+            <div style={{fontSize:13,color:"var(--c-muted)",marginBottom:4}}>恭喜你，抽中了</div>
+            <div style={{fontSize:20,fontWeight:800,color:"rgba(50,130,70,1)",letterSpacing:"0.02em"}}>【{result.name}】</div>
+            {collection.includes(result.name) && collection.filter(n=>n===result.name).length > 1
+              ? <div style={{fontSize:12,color:"var(--c-muted)",marginTop:4}}>已收录到卡册 ✨（重复卡）</div>
+              : <div style={{fontSize:12,color:"rgba(50,130,70,0.8)",marginTop:4}}>新卡入册！🎉</div>
+            }
+          </div>
+          <div style={{fontSize:13,color:"var(--c-muted)"}}>明天再来抽新的瑞吧～</div>
+        </div>
+      )}
+
+      {/* 卡册 */}
+      {phase === "album" && (
+        <div style={{width:"100%",maxWidth:420}}>
+          <div style={{fontSize:13,color:"var(--c-muted)",marginBottom:12,textAlign:"center"}}>
+            已收集 {collectedCards.length} / {CARDS.length} 张
+            {uncollectedCount > 0 && <span>，还差 {uncollectedCount} 张</span>}
+            {uncollectedCount === 0 && <span> 🎊 全收集！</span>}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+            {CARDS.map(card => {
+              const owned = collection.includes(card.name)
+              return (
+                <div key={card.name}
+                  onClick={()=>{ if(owned) setLightboxCard(card) }}
+                  style={{borderRadius:10,overflow:"hidden",
+                    border:`1.5px solid ${owned?"rgba(100,180,120,0.6)":"rgba(195,228,206,0.3)"}`,
+                    background:owned?"#fff":"rgba(220,230,220,0.2)",
+                    aspectRatio:"1/1.6",position:"relative",
+                    cursor:owned?"pointer":"default",transition:"transform 0.15s"}}
+                  onMouseEnter={e=>{ if(owned)(e.currentTarget as HTMLElement).style.transform="scale(1.04)" }}
+                  onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.transform="scale(1)" }}>
+                  {owned ? (
+                    <>
+                      <img src={card.url} alt={card.name}
+                        style={{width:"100%",height:"100%",objectFit:"cover",display:"block",mixBlendMode:"multiply"}}
+                        loading="lazy"/>
+                      <div style={{position:"absolute",bottom:0,left:0,right:0,
+                        background:"linear-gradient(transparent,rgba(0,0,0,0.55))",
+                        padding:"8px 6px 5px",fontSize:10,color:"#fff",textAlign:"center",fontWeight:700}}>
+                        {card.name}
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>🔒</div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <div style={{fontSize:11,color:"var(--c-faint)",textAlign:"center",marginTop:8}}>点击已收集的卡可查看大图</div>
+        </div>
+      )}
+
+      {/* 卡牌灯箱 */}
+      {lightboxCard && (
+        <div onClick={()=>setLightboxCard(null)}
+          style={{position:"fixed",inset:0,zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(0,0,0,0.65)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
+          <div onClick={e=>e.stopPropagation()}
+            style={{maxWidth:"min(320px,80vw)",width:"100%",borderRadius:16,overflow:"hidden",
+              boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}}>
+            <div style={{background:"#fff"}}>
+              <img src={lightboxCard.url} alt={lightboxCard.name}
+                style={{width:"100%",display:"block",mixBlendMode:"multiply"}}/>
+            </div>
+            <div style={{padding:"12px 16px",background:"rgba(200,240,210,0.97)",textAlign:"center",
+              fontSize:15,fontWeight:700,color:"rgba(50,130,70,1)"}}>
+              【{lightboxCard.name}】
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes cardReveal {
+          from { transform: rotateY(90deg) scale(0.8); opacity: 0; }
+          to { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+
+// ════════════════════════════════════════════
+//  DivinationSection — 锁定🐱占卜
+// ════════════════════════════════════════════
+function DivinationSection({ weibo }: { weibo: any[] }) {
+  const LUCKY_COLORS = ["翡翠绿","星空蓝","樱花粉","月光白","琥珀金","珊瑚橙","薰衣草紫","云雾灰","玫瑰红","海棠粉"]
+  const DIRECTIONS = ["东方","西方","南方","北方","东南","西南","东北","西北"]
+  const STAGES = BILIBILI_VIDEOS["舞台"] || []
+
+  const [nums, setNums] = useState(["","",""])
+  const [char, setChar] = useState("")
+  const [result, setResult] = useState<any>(null)
+  const [error, setError] = useState("")
+  const [animating, setAnimating] = useState(false)
+
+  function seededRandom(seed: number) {
+    let s = seed
+    return () => {
+      s = (s * 1664525 + 1013904223) & 0xffffffff
+      return (s >>> 0) / 0xffffffff
+    }
+  }
+
+  function divinate() {
+    const n1 = parseInt(nums[0]), n2 = parseInt(nums[1]), n3 = parseInt(nums[2])
+    if ([n1,n2,n3].some(n => isNaN(n) || n < 1 || n > 100)) {
+      setError("请输入三个1-100之间的数字"); return
+    }
+    if (!char.trim() || !/[一-龥]/.test(char)) {
+      setError("请输入张函瑞名字中的任意一个汉字"); return
+    }
+    setError("")
+    setAnimating(true)
+
+    setTimeout(() => {
+      const seed = n1 * 10000 + n2 * 100 + n3 + char.charCodeAt(0)
+      const rng = seededRandom(seed)
+
+      const luckyColor = LUCKY_COLORS[Math.floor(rng() * LUCKY_COLORS.length)]
+      const luckyNum = Math.floor(rng() * 99) + 1
+      const direction = DIRECTIONS[Math.floor(rng() * DIRECTIONS.length)]
+
+      const stage = STAGES.length > 0 ? STAGES[Math.floor(rng() * STAGES.length)] : null
+
+      // 生成考古月份 (2022-02 到 2026-05)
+      const startYear=2022, startMonth=2
+      const endYear=2026, endMonth=5
+      const totalMonths = (endYear-startYear)*12 + (endMonth-startMonth+1)
+      const monthIdx = Math.floor(rng() * totalMonths)
+      const y = startYear + Math.floor((startMonth-1+monthIdx)/12)
+      const m2 = ((startMonth-1+monthIdx)%12)+1
+      const archiveMonth = `${y}年${String(m2).padStart(2,"0")}月`
+
+      // 生成运势描述
+      const fortunes = [
+        "今天的你光芒万丈，所有人都会被你吸引 ✨",
+        "静待花开，好事正在悄悄向你靠近 🌸",
+        "今天适合大胆表达，说出心里话吧 💬",
+        "能量满满，是突破自我的好时机 🚀",
+        "今天与瑞的缘分特别深，多刷刷他的视频吧 💚",
+        "低调行事，暗中积蓄能量，厚积薄发 🌙",
+        "今天适合回顾经典，重温那些珍贵的瞬间 📺",
+        "保持好心情，快乐是今天最强的护盾 😊",
+      ]
+      const fortune = fortunes[Math.floor(rng() * fortunes.length)]
+
+      setResult({ luckyColor, luckyNum, direction, stage, archiveMonth, fortune })
+      setAnimating(false)
+    }, 1200)
+  }
+
+  const RUI_CHARS = ["张","函","瑞"]
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:16,padding:"8px 0"}}>
+      <div style={{fontSize:14,color:"var(--c-muted)",textAlign:"center"}}>输入三个数字和函瑞名字中的一个字，解锁今日运势 🔮</div>
+
+      {/* 输入区 */}
+      <div style={{background:"rgba(240,250,243,0.4)",borderRadius:14,border:"1.5px solid rgba(195,228,206,0.5)",padding:"16px"}}>
+        <div style={{fontSize:13,color:"var(--c-ink)",fontWeight:600,marginBottom:10}}>输入三个 1-100 的数字</div>
+        <div style={{display:"flex",gap:8,marginBottom:16}}>
+          {[0,1,2].map(i => (
+            <input key={i} type="number" min={1} max={100} value={nums[i]}
+              onChange={e => { const n=[...nums]; n[i]=e.target.value; setNums(n) }}
+              placeholder={(i+1).toString()}
+              style={{flex:1,padding:"10px",borderRadius:10,border:"1.5px solid rgba(195,228,206,0.6)",
+                background:"rgba(255,255,255,0.5)",fontSize:16,textAlign:"center",
+                color:"var(--c-ink)",fontFamily:"inherit",outline:"none"}}/>
+          ))}
+        </div>
+
+        <div style={{fontSize:13,color:"var(--c-ink)",fontWeight:600,marginBottom:10}}>选择张函瑞名字中的一个字</div>
+        <div style={{display:"flex",gap:8,marginBottom:4}}>
+          {RUI_CHARS.map(c => (
+            <button key={c} onClick={()=>setChar(c)}
+              style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:18,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+                border:`1.5px solid ${char===c?"rgba(100,180,120,0.8)":"rgba(195,228,206,0.5)"}`,
+                background:char===c?"rgba(200,240,210,0.6)":"rgba(240,250,243,0.4)",
+                color:char===c?"rgba(50,130,70,1)":"var(--c-ink)"}}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && <div style={{fontSize:13,color:"rgba(180,60,60,1)",textAlign:"center"}}>{error}</div>}
+
+      <button onClick={divinate} disabled={animating}
+        style={{padding:"12px 0",borderRadius:100,width:"100%",
+          border:"1.5px solid rgba(100,180,120,0.6)",
+          background:animating?"rgba(200,230,210,0.3)":"rgba(200,240,210,0.5)",
+          color:"rgba(50,130,70,1)",fontSize:15,fontWeight:700,cursor:animating?"default":"pointer",fontFamily:"inherit"}}>
+        {animating ? "🔮 占卜中..." : "🔮 开始占卜"}
+      </button>
+
+      {/* 结果 */}
+      {result && !animating && (
+        <div style={{display:"flex",flexDirection:"column",gap:12,animation:"cardReveal 0.5s ease"}}>
+          {/* 运势文案 */}
+          <div style={{padding:"14px 18px",borderRadius:14,
+            background:"rgba(200,240,210,0.35)",border:"1.5px solid rgba(100,180,120,0.4)",
+            fontSize:14,color:"var(--c-ink)",lineHeight:1.8,textAlign:"center",fontStyle:"italic"}}>
+            {result.fortune}
+          </div>
+
+          {/* 四格运势 */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {[
+              { label:"🎨 幸运色", value: result.luckyColor },
+              { label:"🔢 幸运数字", value: result.luckyNum },
+              { label:"🧭 幸运方位", value: result.direction },
+              { label:"⚡ 今日能量", value: (result.luckyNum > 50 ? "高" : result.luckyNum > 25 ? "中" : "蓄力中") },
+            ].map(item => (
+              <div key={item.label} style={{padding:"12px 14px",borderRadius:12,
+                background:"rgba(240,250,243,0.5)",border:"1.5px solid rgba(195,228,206,0.5)",textAlign:"center"}}>
+                <div style={{fontSize:12,color:"var(--c-muted)",marginBottom:4}}>{item.label}</div>
+                <div style={{fontSize:17,fontWeight:800,color:"var(--c-ink)"}}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* 推荐舞台 */}
+          {result.stage && (
+            <div style={{borderRadius:12,overflow:"hidden",border:"1.5px solid rgba(195,228,206,0.5)"}}>
+              <div style={{padding:"8px 14px",background:"rgba(200,240,210,0.3)",fontSize:12,color:"var(--c-muted)",fontWeight:600}}>
+                🎬 今日推荐舞台
+              </div>
+              <div onClick={()=>window.open(result.stage.url,"_blank")}
+                style={{padding:"10px 14px",cursor:"pointer",background:"rgba(240,250,243,0.4)",
+                  display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:16}}>🎬</span>
+                <div style={{fontSize:13,color:"rgba(50,130,70,1)",fontWeight:600,lineHeight:1.4,textDecoration:"underline"}}>{result.stage.title} ↗</div>
+              </div>
+            </div>
+          )}
+
+          {/* 考古推荐 */}
+          {result.archiveMonth && (
+            <div style={{padding:"14px 18px",borderRadius:12,
+              background:"rgba(240,250,243,0.5)",border:"1.5px solid rgba(195,228,206,0.5)",
+              textAlign:"center"}}>
+              <div style={{fontSize:12,color:"var(--c-muted)",marginBottom:6}}>📅 今日考古推荐</div>
+              <div style={{fontSize:15,fontWeight:700,color:"var(--c-ink)"}}>
+                今天适合去考古 <span style={{color:"rgba(50,130,70,1)"}}>{result.archiveMonth}</span> 的瑞瑞 🕵️
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CatTowerSection({ weibo }: { weibo: any[] }) {
+  const [activeTab, setActiveTab] = useState<"find"|"discover"|"lock">("find")
+  const tabs = [
+    { key: "find",     label: "寻找🐱" },
+    { key: "discover", label: "发现🐱" },
+    { key: "lock",     label: "锁定🐱" },
+  ]
+  return (
+    <div>
+      {/* 标签切换 */}
+      <div style={{display:"flex",gap:8,marginBottom:20}}>
+        {tabs.map(t => (
+          <button key={t.key} onClick={()=>setActiveTab(t.key as any)}
+            style={{padding:"7px 18px",borderRadius:100,border:`1.5px solid ${activeTab===t.key?"rgba(100,180,120,0.7)":"rgba(195,228,206,0.4)"}`,
+            background:activeTab===t.key?"rgba(200,240,210,0.5)":"rgba(240,250,243,0.3)",
+            color:activeTab===t.key?"rgba(50,130,70,1)":"var(--c-muted)",
+            fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"}}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "find" && <CatGameSection weibo={weibo}/>}
+
+      {activeTab === "discover" && <CardDrawSection/>}
+
+      {activeTab === "lock" && <DivinationSection weibo={weibo}/>}
+    </div>
+  )
+}
+
 function AboutWebsite() {
   return (
     <div style={{
@@ -4982,6 +5877,7 @@ export default function Home({ data }) {
     {id:"weibo",  emoji:"📸",label:"微博图集"},
     {id:"daily-share",emoji:"🎀",label:"日常分享"},
     {id:"merch",  emoji:"🛍️",label:"周边收藏"},
+    {id:"cat-tower",emoji:"🐱",label:"猫爬架"},
     {id:"about-site",emoji:"💌",label:"关于本站"},
   ]
 
@@ -5224,7 +6120,7 @@ export default function Home({ data }) {
             ))}
           </NavSection>
           <NavSection emoji="💌" title="成长录">
-            {["📅 星期五练习生","⭐ 一颗好星星","🥚 PD的蛋生","🎯 四一有意思","🐱 喵生日记"].map(label=>(
+            {["📅 星期五练习生","⭐ 一颗好星星","🥚 PD的蛋生","🎯 四一有意思","🐱 喵生日记","🎤 瑞麦"].map(label=>(
               <button key={label} className="month-btn"
                 onClick={()=>{setActiveSection("growth");sectionRefs.current["growth"]?.scrollIntoView({behavior:"smooth",block:"start"})}}>
                 <span>{label}</span>
@@ -5367,6 +6263,13 @@ export default function Home({ data }) {
             </div>
           </div>
 
+
+          {/* 猫爬架 */}
+          <div ref={el=>sectionRefs.current["cat-tower"]=el} className="section-card" id="cat-tower">
+            <div className="section-heading"><span className="section-heading-badge">🐱</span>猫爬架</div>
+            <CatTowerSection weibo={data.weibo}/>
+          </div>
+
           {/* 关于本站 */}
           <div ref={el=>sectionRefs.current["about-site"]=el} className="section-card" id="about-site">
             <div className="section-heading"><span className="section-heading-badge">💌</span>关于本网站</div>
@@ -5376,7 +6279,7 @@ export default function Home({ data }) {
           {/* Footer */}
           <div style={{textAlign:"center",padding:"22px 0 46px"}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(240,250,243,0.58)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",border:"1px solid var(--glass-border-soft)",borderRadius:100,padding:"10px 22px",marginBottom:12,fontSize:16,boxShadow:"var(--glass-shadow)"}}>🌿 💚 🌿</div>
-            <div style={{fontSize:12,color:"var(--c-muted)",fontWeight:500,marginBottom:4}}>made with 💚 by a Rui fan · 永远支持你 ✨</div>
+            <div style={{fontSize:12,color:"var(--c-muted)",fontWeight:500,marginBottom:4}}>made with 💚 by a Rui fan · 爱瑞的人心不会改变 ✨</div>
             <div style={{fontSize:10.5,color:"var(--c-faint)"}}>照片版权归时代峰峻及张函瑞本人所有，仅供粉丝欣赏</div>
           </div>
         </main>
