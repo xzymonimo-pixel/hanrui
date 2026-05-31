@@ -5666,13 +5666,13 @@ export default function Home({ data }) {
           justify-content:space-around;align-items:center;
         }
         .mobile-nav-btn{
-          display:flex;flex-direction:column;align-items:center;gap:3px;
-          background:none;border:none;cursor:pointer;padding:4px 12px;
+          display:flex;flex-direction:column;align-items:center;gap:2px;
+          background:none;border:none;cursor:pointer;padding:4px 4px;
           -webkit-tap-highlight-color:transparent;
-          font-family:inherit;
+          font-family:inherit;flex:1;
         }
-        .mobile-nav-btn .mnb-emoji{font-size:20px;line-height:1}
-        .mobile-nav-btn .mnb-label{font-size:9px;font-weight:600;color:var(--c-muted);letter-spacing:0.03em}
+        .mobile-nav-btn .mnb-emoji{font-size:18px;line-height:1}
+        .mobile-nav-btn .mnb-label{font-size:8px;font-weight:600;color:var(--c-muted);letter-spacing:0em}
         .mobile-nav-btn.active .mnb-label{color:var(--c-accent)}
       `}}/>
 
