@@ -3017,7 +3017,7 @@ function BiliTabContent({ tab }) {
       ><span style={{fontSize:16}}>🎲</span> 随机今日 · 帮我选一个！</button>
 
       {/* 月份横排筛选 */}
-      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14,flexWrap:"wrap"}}>
+      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14}}>
         <button onClick={()=>setActiveMonth(null)} style={{
           padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
           border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
@@ -3513,7 +3513,7 @@ function GrowthBiliTab({ data, label }) {
   return (
     <div>
       {/* 月份横排筛选 */}
-      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14,flexWrap:"wrap"}}>
+      <div className="tabs-scroll" style={{display:"flex",gap:5,marginBottom:14}}>
         <button onClick={()=>setActiveMonth(null)} style={{
           padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",flexShrink:0,
           border:`1px solid ${!activeMonth?"rgba(120,185,142,0.7)":"rgba(195,228,206,0.4)"}`,
@@ -5820,7 +5820,7 @@ export default function Home({ data }) {
           .tabs-scroll::-webkit-scrollbar{display:none!important}
 
           /* 网格两列 */
-          .bili-grid{grid-template-columns:repeat(3,1fr)!important}
+          .bili-grid{grid-template-columns:repeat(2,1fr)!important}
 
           /* 月份导航手机端变为顶部折叠条 */
           .month-nav{width:100%!important;flex:none!important;order:-1!important;margin-bottom:10px}
