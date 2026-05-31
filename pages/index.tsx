@@ -3035,7 +3035,7 @@ function BiliTabContent({ tab }) {
       </div>
 
       {/* 视频网格 */}
-      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:12}}>
+      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:12}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
@@ -3126,7 +3126,7 @@ function ZhipaiSection() {
               <span style={{fontSize:13,fontWeight:800,color:"var(--c-ink)"}}>{year}</span>
               <span style={{fontSize:10,color:"var(--c-muted)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.3)",borderRadius:100,padding:"1px 8px"}}>{byYear[year].length} 条</span>
             </div>
-            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:10}}>
               {byYear[year].map((v,i)=>{
                 const bvid = v.url.split('/video/')[1]?.replace('/','') || `zp${station.id}${i}`
                 return (
@@ -3526,7 +3526,7 @@ function GrowthBiliTab({ data, label }) {
       </div>
 
       {/* 视频网格 */}
-      <div className="growth-bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+      <div className="growth-bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:10}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
@@ -5512,7 +5512,7 @@ function GaohuyuSection() {
                 <span style={{marginLeft:"auto",fontSize:11,color:"var(--c-faint)",transition:"transform 0.2s",transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
               </button>
               {isOpen&&(
-                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10}}>
+                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:10}}>
                   {vids.map(v=><BiliCard key={v.bvid} video={v}/>)}
                 </div>
               )}
@@ -5815,8 +5815,8 @@ export default function Home({ data }) {
           .tabs-scroll::-webkit-scrollbar{display:none!important}
 
           /* 网格两列 */
-          .bili-grid{grid-template-columns:repeat(2,1fr)!important}
-          .growth-bili-grid{grid-template-columns:repeat(2,1fr)!important}
+          .bili-grid{grid-template-columns:repeat(3,1fr)!important;overflow:hidden!important}
+          .growth-bili-grid{grid-template-columns:repeat(3,1fr)!important;overflow:hidden!important}
 
           /* 月份导航手机端变为顶部折叠条 */
           .month-nav{width:100%!important;flex:none!important;order:-1!important;margin-bottom:10px}
