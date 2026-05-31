@@ -5619,7 +5619,7 @@ export default function Home({ data }) {
           .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
           .section-card{padding:16px 12px!important}
           .mobile-nav{display:flex!important}
-          .main-content{padding:12px 10px 80px!important}
+          .main-content{padding:12px 10px 80px!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
           .hide-mobile{display:none!important}
 
           /* tabs 横向滚动 */
