@@ -5641,7 +5641,7 @@ function FoodSection() {
 // ════════════════════════════════════════════
 export default function Home({ data }) {
   const [loading,setLoading]=useState(true)
-  const [isMobile,setIsMobile]=useState(false)
+  const [isMobile,setIsMobile]=useState(true)
   useEffect(()=>{
     const check=()=>setIsMobile(window.innerWidth<=768)
     check()
