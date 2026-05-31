@@ -5449,6 +5449,13 @@ function FoodSection() {
 // ════════════════════════════════════════════
 export default function Home({ data }) {
   const [loading,setLoading]=useState(true)
+  const [isMobile,setIsMobile]=useState(false)
+  useEffect(()=>{
+    const check=()=>setIsMobile(window.innerWidth<=768)
+    check()
+    window.addEventListener("resize",check)
+    return ()=>window.removeEventListener("resize",check)
+  },[])
   const [weiboOpen,setWeiboOpen]=useState({})
   const [weiboModal,setWeiboModal]=useState(null)
   const [weiboPage,setWeiboPage]=useState(1)
@@ -5690,7 +5697,7 @@ export default function Home({ data }) {
       {!loading&&<span className="hide-mobile"><MusicPlayer bgmList={data.bgmList}/></span>}
       {lightbox&&<Lightbox src={lightbox} onClose={()=>setLightbox(null)}/>}
 
-      <div className="layout" style={{display:"flex",minHeight:"100vh",position:"relative",zIndex:1}}>
+      <div className="layout" style={{display:isMobile?"block":"flex",minHeight:"100vh",position:"relative",zIndex:1,width:"100%"}}>
 
         {/* ─── Sidebar ─── */}
         <aside className="sidebar" style={{
