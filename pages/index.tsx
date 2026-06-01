@@ -3124,6 +3124,19 @@ function ZhipaiSection() {
         ))}
       </div>
 
+      {/* 随机按钮 */}
+      <button onClick={()=>{const s=ZHIPAI_DATA[Math.floor(Math.random()*ZHIPAI_DATA.length)];window.open(s.videos[Math.floor(Math.random()*s.videos.length)].url,"_blank")}} style={{
+        width:"100%",marginBottom:12,padding:"9px 14px",
+        background:"linear-gradient(135deg,rgba(162,214,174,0.5),rgba(130,190,152,0.38))",
+        border:"1px solid rgba(120,185,142,0.6)",borderRadius:10,cursor:"pointer",
+        fontFamily:"inherit",fontSize:12,fontWeight:700,color:"var(--c-ink)",
+        display:"flex",alignItems:"center",justifyContent:"center",gap:7,
+        boxShadow:"0 2px 10px rgba(40,100,56,0.10)",transition:"all 0.18s",
+      }}
+      onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(40,100,56,0.20)"}
+      onMouseLeave={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.10)"}
+      ><span style={{fontSize:16}}>🎲</span> 随机今日 · 帮我选一个！</button>
+
       {/* 视频网格 */}
       <div style={{
         background:"rgba(240,250,243,0.52)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
