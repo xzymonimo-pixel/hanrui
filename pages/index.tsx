@@ -2845,9 +2845,9 @@ function BreathingGlow() {
 function biliImgProxy(url: string): string {
   if (!url) return ""
   // 已经是代理地址就不重复处理
-  if (url.startsWith("/api/bili-img")) return url
+  if (url.startsWith("https://bili-img-proxy.xzymonimo.workers.dev")) return url
   // 只代理B站图片域名
-  if (url.includes("hdslb.com")) return `/api/bili-img?url=${encodeURIComponent(url)}`
+  if (url.includes("hdslb.com")) return `https://bili-img-proxy.xzymonimo.workers.dev?url=${encodeURIComponent(url)}`
   return url
 }
 
