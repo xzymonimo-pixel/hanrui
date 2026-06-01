@@ -5531,8 +5531,23 @@ function GaohuyuSection() {
                 <span style={{marginLeft:"auto",fontSize:11,color:"var(--c-faint)",transition:"transform 0.2s",transform:isOpen?"rotate(180deg)":"rotate(0deg)"}}>▼</span>
               </button>
               {isOpen&&(
-                <div style={{marginTop:8,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:10}}>
-                  {vids.map(v=><BiliCard key={v.bvid} video={v}/>)}
+                <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
+                  {vids.map(v=>(
+                    <a key={v.bvid} href={v.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>
+                      <div style={{
+                        display:"flex",alignItems:"center",gap:10,padding:"8px 12px",
+                        background:"rgba(255,255,255,0.38)",border:"1px solid rgba(195,228,206,0.4)",
+                        borderRadius:8,transition:"all 0.15s",cursor:"pointer",
+                      }}
+                      onMouseEnter={e=>{e.currentTarget.style.background="rgba(240,252,244,0.7)";e.currentTarget.style.borderColor="rgba(120,185,142,0.5)"}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.38)";e.currentTarget.style.borderColor="rgba(195,228,206,0.4)"}}
+                      >
+                        <span style={{fontSize:10,background:"rgba(0,160,230,0.1)",color:"#0070b8",border:"1px solid rgba(0,160,230,0.2)",borderRadius:4,padding:"1px 6px",fontWeight:700,flexShrink:0}}>B站</span>
+                        <span style={{fontSize:13,fontWeight:600,color:"var(--c-ink)",flex:1}}>{v.title}</span>
+                        <span style={{fontSize:11,color:"var(--c-faint)",flexShrink:0}}>↗</span>
+                      </div>
+                    </a>
+                  ))}
                 </div>
               )}
             </div>
