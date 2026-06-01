@@ -224,7 +224,7 @@ const BILIBILI_VIDEOS = {
   ],
 }
 
-const ZHIPAI_DATA = [
+nst ZHIPAI_DATA = [
   {
     id: "zp_477183100",
     name: "站姐④",
@@ -613,7 +613,8 @@ const ZHIPAI_DATA = [
       { title: "【张函瑞】随舞天花板预定？张函瑞即兴发挥全程高能，每个动作都踩在节奏上谁懂！", url: "https://www.bilibili.com/video/BV16XgazYETX/", cover: "https://i1.hdslb.com/bfs/archive/19fd6c24d2cb344fcecacc2287edd330d781586e.jpg", date: "2025-07", views: "1156", event: "直拍" }
     ],
   },
-]nst ZHIPAI_DATA = [
+]
+const ZHIPAI_DATA = [
   {
     id: "zp_477183100",
     name: "猫罐头丨张函瑞",
