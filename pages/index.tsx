@@ -3054,7 +3054,7 @@ function BiliTabContent({ tab }) {
       </div>
 
       {/* 视频网格 */}
-      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:12}}>
+      <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
         {displayed.map((v,i)=><BiliCard key={`${v.bvid}-${i}`} video={v}/>)}
       </div>
     </div>
@@ -3145,7 +3145,7 @@ function ZhipaiSection() {
               <span style={{fontSize:13,fontWeight:800,color:"var(--c-ink)"}}>{year}</span>
               <span style={{fontSize:10,color:"var(--c-muted)",background:"rgba(162,214,174,0.2)",border:"1px solid rgba(120,185,142,0.3)",borderRadius:100,padding:"1px 8px"}}>{byYear[year].length} 条</span>
             </div>
-            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(0,1fr))",gap:10}}>
+            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10}}>
               {byYear[year].map((v,i)=>{
                 const bvid = v.url.split('/video/')[1]?.replace('/','') || `zp${station.id}${i}`
                 return (
