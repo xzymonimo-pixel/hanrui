@@ -1434,6 +1434,7 @@ function ZhipaiSection() {
           </button>
         ))}
       </div>
+      <div style={{textAlign:"center",fontSize:10,color:"var(--c-faint)",marginTop:-6,marginBottom:10}} className="mobile-only-hint">← 向右拖动查看更多站姐 →</div>
 
       {/* 年份快速导航 */}
       <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:14}}>
@@ -4210,7 +4211,8 @@ export default function Home({ data }) {
         .expand-btn:hover{background:rgba(186,228,196,0.45);color:var(--c-ink)}
         .expand-btn.open{background:rgba(162,214,174,0.38);color:var(--c-ink)}
         .sidebar-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(155,210,168,0.40),transparent);margin:12px 0}
-        @media(max-width:768px){
+        .mobile-only-hint{display:none}
+          @media(max-width:768px){
           .layout{display:block!important;width:100vw!important}
           .sidebar{display:none!important;width:0!important;overflow:hidden!important}
           .hero-banner{padding:20px 18px!important;flex-wrap:wrap}
@@ -4222,6 +4224,7 @@ export default function Home({ data }) {
           /* tabs 横向滚动 */
           .tabs-scroll{display:flex!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:6px!important;padding-bottom:6px!important;flex-wrap:nowrap!important;max-width:100%!important;width:100%!important;scrollbar-width:none!important}
           .tabs-scroll::-webkit-scrollbar{display:none!important}
+          .mobile-only-hint{display:block!important}
 
           /* 网格两列 */
           .bili-grid{grid-template-columns:repeat(3,1fr)!important;overflow:hidden!important}
