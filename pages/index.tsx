@@ -1864,13 +1864,6 @@ const QIANWAN_DATA = [
   { bvid:"BV1dCQJBLEmp", title:"「Dream, Side B」", cover:"", url:"https://www.bilibili.com/video/BV1dCQJBLEmp/", date:"2025-12", tags:[] },
 ]
 
-  { bvid:"BV1apAEzcEA7", title:"02: 白日研究所", cover:"https://i1.hdslb.com/bfs/archive/e1cb1ae7fbc4c164b14d8fedab836c59008847e3.jpg", url:"https://www.bilibili.com/video/BV1apAEzcEA7/", date:"2026-03", tags:[] },
-  { bvid:"BV1hDXAB8EQG", title:"03: 星光收集员", cover:"https://i1.hdslb.com/bfs/archive/e1cb1ae7fbc4c164b14d8fedab836c59008847e3.jpg", url:"https://www.bilibili.com/video/BV1hDXAB8EQG/", date:"2026-03", tags:[] },
-  { bvid:"BV17C9oBZE3j", title:"04: 误闯天家", cover:"https://i0.hdslb.com/bfs/archive/c377b9282d7beffa23029588e7340573437f9ac1.jpg", url:"https://www.bilibili.com/video/BV17C9oBZE3j/", date:"2026-05", tags:[] },
-  { bvid:"BV1BsRXBEEGi", title:"05: 您有新的隐藏任务", cover:"https://i0.hdslb.com/bfs/archive/03466d733ed8d02a032b260ba4b41b405fa52979.jpg", url:"https://www.bilibili.com/video/BV1BsRXBEEGi/", date:"2026-05", tags:[] },
-  { bvid:"BV1nk5r6dE5y", title:"06: 做完你的做你的", cover:"https://i0.hdslb.com/bfs/archive/19aa1d52c37d588b0f7422659ce2d8e3be9aafca.jpg", url:"https://www.bilibili.com/video/BV1nk5r6dE5y/", date:"2026-05", tags:[] },
-  { bvid:"BV1i4Gq6YE35", title:"07: 福如大海", cover:"https://i1.hdslb.com/bfs/archive/5edc522711a84659e0fa75af8ec6d961e651af7e.jpg", url:"https://www.bilibili.com/video/BV1i4Gq6YE35/", date:"2026-05", tags:[] },
-]
 
 function TanxinSection() {
   const subtabs = ["冬夜童话集","千万分之一的我"]
