@@ -1505,9 +1505,53 @@ function ZhipaiSection() {
 //  Merch Section (展柜风格)
 // ════════════════════════════════════════════
 function MerchSection({ merchCategories, onLightbox }) {
-  const cats=["小卡","玩偶","官方周边","非官方周边","其他收藏"]
+  const cats=["小卡","玩偶","非官方周边"]
   const [activeTab,setActiveTab]=useState("小卡")
-  const imgs=merchCategories[activeTab]||[]
+
+  const XIAOKA_DATA = [
+    { name:"2022.10.28 童话秘境", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2022.10.28_童话秘境.jpg", group:"其他" },
+    { name:"2023.1.29 冬日来信", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2023.1.29_冬日来信.jpg", group:"其他" },
+    { name:"2023.5.13 少年梦工厂-立夏", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2023.5.13_少年梦工厂-立夏.jpg", group:"梦工厂" },
+    { name:"2023.7.30 少年梦工厂-多巴胺", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2023.7.30_少年梦工厂-多巴胺.jpg", group:"梦工厂" },
+    { name:"2023.11.10 最小的事", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2023.11.10_最小的事.jpg", group:"其他" },
+    { name:"2024.2.14 新音 野蛮生长", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.2.14_新音_野蛮生长.jpg", group:"新音" },
+    { name:"2024.4.26 奔跑1-当我们在此刻出发", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.4.26_奔跑1-当我们在此刻出发.jpg", group:"奔跑" },
+    { name:"2024.7.17 2024夏日运动会", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.7.17_2024夏日运动会.jpg", group:"运动会" },
+    { name:"2024.8.11 万物时", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.8.11_万物时.jpg", group:"其他" },
+    { name:"2024.8.31 少年游", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.8.31_少年游.jpg", group:"其他" },
+    { name:"2024.9.30 危险的关系", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.9.30_危险的关系.jpg", group:"其他" },
+    { name:"2024.11.1 2025台历-关于我的if线", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.11.1_2025台历-关于我的if线.jpg", group:"台历" },
+    { name:"2024.12.14 奔跑2-当阳光降落在这里", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2024.12.14_奔跑2-当阳光降落在这里.jpg", group:"奔跑" },
+    { name:"2025.1.18 2025新音 热爱", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.1.18_2025新音_热爱.jpg", group:"新音" },
+    { name:"2025.2.28 奔跑3-冬日回信", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.2.28_奔跑3-冬日回信.jpg", group:"奔跑" },
+    { name:"2025.6.7 Lil Baby 10cm棉花娃娃", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.6.7_Lil_Baby_10cm棉花娃娃.jpg", group:"其他" },
+    { name:"2025.7.12 2025夏日运动会", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.7.12_2025夏日运动会.jpg", group:"运动会" },
+    { name:"2025.8.8 肆意少年-突围卡包", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.8.8_肆意少年-突围卡包.jpg", group:"肆意少年" },
+    { name:"2025.9.6 肆意少年公演", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.9.6_肆意少年公演.jpg", group:"肆意少年" },
+    { name:"2025.10.2 2026台历-GAME OF LIFE", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2025.10.2_2026台历-GAME_OF_LIFE.jpg", group:"台历" },
+    { name:"2026.1.2 2026荣耀·新年音乐会", url:"https://ik.imagekit.io/ruihouse/merch/小卡/2026.1.2_2026荣耀_新年音乐会.jpg", group:"新音" },
+  ]
+  const XIAOKA_GROUPS = ["全部","奔跑","新音","运动会","台历","梦工厂","肆意少年","其他"]
+
+  const YUANOU_DATA = [
+    { name:"2025.6.7 Lil Baby 10cm棉花娃娃", url:"https://ik.imagekit.io/ruihouse/merch/玩偶/2025.6.7_Lil_Baby_10cm棉花娃娃.jpg" },
+    { name:"2025.10.2 2026台历-GAME OF LIFE 单人挂件", url:"https://ik.imagekit.io/ruihouse/merch/玩偶/2025.10.2_2026台历-GAME_OF_LIFE_单人挂件.jpg" },
+    { name:"2026.02.18 卡拉OK娃", url:"https://ik.imagekit.io/ruihouse/merch/玩偶/2026.02.18_卡拉OK娃.jpg" },
+  ]
+  const [xiaokaSub, setXiaokaSub] = useState("全部")
+  const xiaokaMerch = xiaokaSub==="全部" ? XIAOKA_DATA : XIAOKA_DATA.filter(c=>c.group===xiaokaSub)
+  const imgs = activeTab==="小卡" ? [] : (merchCategories[activeTab]||[])
+
+  const cardStyle = {
+    borderRadius:14, overflow:"hidden", cursor:"pointer",
+    background:"rgba(240,250,243,0.52)",
+    backdropFilter:"blur(10px)", WebkitBackdropFilter:"blur(10px)",
+    border:"1px solid rgba(195,228,206,0.5)",
+    boxShadow:"0 2px 10px rgba(40,100,56,0.07)",
+    transition:"transform 0.22s,box-shadow 0.22s",
+    animation:"popIn 0.35s ease both",
+  }
+
   return (
     <div>
       <div style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
@@ -1522,34 +1566,64 @@ function MerchSection({ merchCategories, onLightbox }) {
           }}>{c}</button>
         ))}
       </div>
-      {imgs.length===0?(
-        <div style={{textAlign:"center",padding:"42px 0",color:"var(--c-faint)"}}>
-          <div style={{fontSize:36,marginBottom:10}}>🛍️</div>
-          <p style={{fontSize:13}}>图片放在 <code style={{background:"rgba(160,210,172,0.18)",border:"1px solid rgba(155,210,168,0.35)",padding:"2px 7px",borderRadius:6,fontFamily:"monospace"}}>public/merch/{activeTab}/</code> 下 ✨</p>
-        </div>
-      ):(
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13}}>
-          {imgs.map((img,i)=>(
-            <div key={i}
-              onClick={()=>onLightbox(img)}
-              style={{
-                borderRadius:14,overflow:"hidden",cursor:"pointer",
-                background:"rgba(240,250,243,0.52)",
-                backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-                border:"1px solid rgba(195,228,206,0.5)",
-                boxShadow:"0 2px 10px rgba(40,100,56,0.07)",
-                transition:"transform 0.22s,box-shadow 0.22s",
-                animation:"popIn 0.35s ease both",
-              }}
-              onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-5px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(40,100,56,0.16)"}}
-              onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.07)"}}
-            >
-              <img src={img} alt="" loading="lazy" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
-              <div style={{padding:"7px 10px",fontSize:10.5,color:"var(--c-ink-3)",fontWeight:600,letterSpacing:"0.03em"}}>
-                ✦ {activeTab} {String(i+1).padStart(2,"0")}
+
+      {activeTab==="小卡" && (
+        <div>
+          <div style={{display:"flex",gap:5,marginBottom:16,flexWrap:"wrap"}}>
+            {XIAOKA_GROUPS.map(g=>(
+              <button key={g} onClick={()=>setXiaokaSub(g)} style={{
+                padding:"4px 12px",borderRadius:100,fontSize:11,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
+                border:"1px solid",transition:"all 0.18s",
+                ...(xiaokaSub===g
+                  ?{background:"linear-gradient(135deg,rgba(162,214,174,0.5),rgba(130,190,152,0.38))",borderColor:"rgba(120,185,142,0.6)",color:"var(--c-ink)"}
+                  :{background:"rgba(255,255,255,0.3)",borderColor:"rgba(195,228,206,0.4)",color:"var(--c-muted)"}
+                ),
+              }}>
+                {g}{g!=="全部" && <span style={{fontSize:9,marginLeft:3,opacity:0.6}}>{XIAOKA_DATA.filter(c=>c.group===g).length}</span>}
+              </button>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13}}>
+            {xiaokaMerch.map((card)=>(
+              <div key={card.name} onClick={()=>onLightbox(card.url)}
+                style={cardStyle}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-5px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(40,100,56,0.16)"}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.07)"}}
+              >
+                <img src={card.url} alt={card.name} loading="lazy" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
+                <div style={{padding:"7px 10px",fontSize:9.5,color:"var(--c-ink-3)",fontWeight:600,letterSpacing:"0.02em",lineHeight:1.3}}>
+                  {card.name}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div style={{marginTop:10,fontSize:10,color:"var(--c-faint)",textAlign:"center"}}>小卡统计 cr 图片水印</div>
+        </div>
+      )}
+
+      {activeTab==="玩偶" && (
+        <div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:13}}>
+            {YUANOU_DATA.map((doll)=>(
+              <div key={doll.name} onClick={()=>onLightbox(doll.url)}
+                style={cardStyle}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-5px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(40,100,56,0.16)"}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.07)"}}
+              >
+                <img src={doll.url} alt={doll.name} loading="lazy" style={{width:"100%",aspectRatio:"1",objectFit:"cover",display:"block"}}/>
+                <div style={{padding:"7px 10px",fontSize:9.5,color:"var(--c-ink-3)",fontWeight:600,letterSpacing:"0.02em",lineHeight:1.3}}>
+                  {doll.name}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab==="非官方周边" && (
+        <div style={{textAlign:"center",padding:"42px 0",color:"var(--c-faint)"}}>
+          <div style={{fontSize:36,marginBottom:10}}>🎁</div>
+          <p style={{fontSize:13}}>正在统计中，暂未开放</p>
         </div>
       )}
     </div>
@@ -4460,21 +4534,7 @@ export default function Home({ data }) {
           {/* 周边 */}
           <div ref={el=>sectionRefs.current["merch"]=el} className="section-card" id="merch">
             <div className="section-heading"><span className="section-heading-badge">🛍️</span>周边收藏</div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {["小卡","玩偶","其他类型周边"].map(cat=>(
-                <div key={cat} style={{
-                  background:"rgba(240,250,243,0.52)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
-                  border:"1px solid rgba(195,228,206,0.5)",borderRadius:12,padding:"14px 18px",
-                  display:"flex",alignItems:"center",gap:12,
-                }}>
-                  <span style={{fontSize:18}}>{cat==="小卡"?"🃏":cat==="玩偶"?"🧸":"🎁"}</span>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:700,color:"var(--c-ink)",marginBottom:4}}>{cat}</div>
-                    <div style={{fontSize:12,color:"var(--c-muted)"}}>由于暂未收集数据，此板块暂未开放</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <MerchSection merchCategories={data.merchCategories} onLightbox={setLightbox}/>
           </div>
 
           {/* 猫爬架 */}
