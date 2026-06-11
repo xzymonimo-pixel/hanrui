@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 // pages/api/bili-img.ts
 // 放到：hanrui/pages/api/bili-img.ts
 //
@@ -72,3 +73,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).end("代理请求失败")
   }
 }
+
