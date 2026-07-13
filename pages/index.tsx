@@ -134,6 +134,82 @@ export async function getStaticProps() {
   return { props: { data: { weibo, workCategories: BILIBILI_VIDEOS, merchCategories, bgmList } } }
 }
 
+// 快速安利区数据
+const RECOMMEND_DATA = [
+  {
+    bvid: "BV1234y1Z7CX",
+    title: "《光亮》",
+    cover: "https://i1.hdslb.com/bfs/archive/2e64318c051b6887d547293766495432364d1908.jpg",
+    url: "https://www.bilibili.com/video/BV1234y1Z7CX/",
+    desc: "封神之作，全网百万reaction",
+    tag: "舞台",
+  },
+  {
+    bvid: "BV1VW4y1J7w5",
+    title: "《兰亭序》",
+    cover: "https://i0.hdslb.com/bfs/archive/ab1599583216f208aa20e29540e7c10615d0541a.jpg",
+    url: "https://www.bilibili.com/video/BV1VW4y1J7w5/",
+    desc: "路演惊艳全场，带领四代出圈",
+    tag: "舞台",
+  },
+  {
+    bvid: "BV1zF41167dH",
+    title: "《我离开我自己》",
+    cover: "http://i1.hdslb.com/bfs/archive/2d5f52700e7ca67592b034b652b66332be86a1d0.jpg",
+    url: "https://www.bilibili.com/video/BV1zF41167dH/",
+    desc: "「杜鹃啼血」催泪之作",
+    tag: "舞台",
+  },
+  {
+    bvid: "BV1LtDsYbEFS",
+    title: "《水星记》",
+    cover: "https://i0.hdslb.com/bfs/archive/91e916abc70a7fb946f1190d46bb054f0fc187f0.jpg",
+    url: "https://www.bilibili.com/video/BV1LtDsYbEFS/",
+    desc: "变声期最严重时一举拿下考核第一，证明自己",
+    tag: "考核",
+  },
+  {
+    bvid: "BV1mp4JzpEmj",
+    title: "《Sorry Would Go a Long Way》",
+    cover: "https://i0.hdslb.com/bfs/archive/4584ad1127b8e1e9fd47acf21d23a3a48c9eac33.jpg",
+    url: "https://www.bilibili.com/video/BV1mp4JzpEmj/",
+    desc: "考核大魔王袭来，暴风吸粉期",
+    tag: "考核",
+  },
+  {
+    bvid: "BV1nKkwBLED1",
+    title: "《黄昏晓》",
+    cover: "https://i2.hdslb.com/bfs/archive/478b683bf8f4e44e1ef425ba48216073d643f9ae.jpg",
+    url: "https://www.bilibili.com/video/BV1nKkwBLED1/",
+    desc: "四段高音升调，震撼人心",
+    tag: "舞台",
+  },
+  {
+    bvid: "BV1PMBiBMEze",
+    title: "《爱要坦荡荡》",
+    cover: "https://i0.hdslb.com/bfs/archive/09954882bccec5fda65c093567e04faf2ffffcc5.jpg",
+    url: "https://www.bilibili.com/video/BV1PMBiBMEze/",
+    desc: "「孜染小子」名场面",
+    tag: "舞台",
+  },
+  {
+    bvid: "BV1ANFmzxE8T",
+    title: "《太阳与地球》",
+    cover: "https://i0.hdslb.com/bfs/archive/fcd539a3c2c80650dda639ba787467bc44e3ece6.jpg",
+    url: "https://www.bilibili.com/video/BV1ANFmzxE8T/",
+    desc: "荣耀之战大出圈",
+    tag: "舞台",
+  },
+  {
+    bvid: "BV1BENc6mEkY",
+    title: "《Sing For You》",
+    cover: "http://i0.hdslb.com/bfs/archive/aea845953053409053a3d6a4fe37d0bb3ba782b6.jpg",
+    url: "https://www.bilibili.com/video/BV1BENc6mEkY/",
+    desc: "最新考核大魔王袭来，主唱地位无人撼动",
+    tag: "考核",
+  },
+]
+
 // 作品四分类：舞台 考核 编曲 个人作品
 const BILIBILI_VIDEOS = {
     舞台: [
@@ -1289,6 +1365,50 @@ function BiliCard({ video }) {
         </div>
       </div>
     </a>
+  )
+}
+
+// ════════════════════════════════════════════
+//  快速安利区
+// ════════════════════════════════════════════
+function RecommendSection() {
+  return (
+    <div>
+      <p style={{fontSize:12.5,color:"var(--c-ink-2)",lineHeight:1.8,marginBottom:18}}>
+        初识张函瑞？从这几个视频开始，保证入坑 💚
+      </p>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:14}}>
+        {RECOMMEND_DATA.map((v,i)=>(
+          <a key={i} href={v.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none",display:"block"}}>
+            <div style={{
+              borderRadius:14,overflow:"hidden",cursor:"pointer",
+              background:"rgba(240,250,243,0.55)",
+              backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+              border:"1px solid rgba(195,228,206,0.5)",
+              boxShadow:"0 2px 10px rgba(40,100,56,0.07)",
+              transition:"transform 0.22s, box-shadow 0.22s",
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-4px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(40,100,56,0.16)"}}
+            onMouseLeave={e=>{e.currentTarget.style.transform="";e.currentTarget.style.boxShadow="0 2px 10px rgba(40,100,56,0.07)"}}
+            >
+              {/* 封面 */}
+              <div style={{position:"relative",aspectRatio:"16/9",overflow:"hidden",background:"rgba(160,210,172,0.2)"}}>
+                <img src={v.cover} alt={v.title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                <div style={{position:"absolute",top:6,left:6,background:"rgba(0,161,214,0.85)",borderRadius:5,padding:"2px 7px",fontSize:9,fontWeight:700,color:"#fff"}}>bilibili</div>
+                <div style={{position:"absolute",top:6,right:6,borderRadius:100,padding:"2px 8px",fontSize:9,fontWeight:700,color:"#fff",
+                  background: v.tag==="考核" ? "rgba(220,100,60,0.85)" : "rgba(40,140,80,0.85)"
+                }}>{v.tag}</div>
+              </div>
+              {/* 文字 */}
+              <div style={{padding:"10px 12px 12px"}}>
+                <div style={{fontSize:12,fontWeight:800,color:"var(--c-ink)",marginBottom:5,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.title}</div>
+                <div style={{fontSize:11,color:"var(--c-ink-2)",lineHeight:1.6}}>{v.desc}</div>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -4312,6 +4432,7 @@ export default function Home({ data }) {
 
   const SIDEBAR_LINKS=[
     {id:"profile",emoji:"🌿",label:"瑞的简历"},
+    {id:"recommend",emoji:"⭐",label:"快速安利"},
     {id:"works",  emoji:"🎬",label:"作品"},
     {id:"growth", emoji:"💌",label:"成长录"},
     {id:"weibo",  emoji:"📸",label:"微博图集"},
@@ -4600,6 +4721,12 @@ export default function Home({ data }) {
           <div ref={el=>sectionRefs.current["profile"]=el} className="section-card" id="profile">
             <div className="section-heading"><span className="section-heading-badge">🌿</span>瑞的简历</div>
             <ProfileSection/>
+          </div>
+
+          {/* 快速安利 */}
+          <div ref={el=>sectionRefs.current["recommend"]=el} className="section-card" id="recommend">
+            <div className="section-heading"><span className="section-heading-badge">⭐</span>快速安利</div>
+            <RecommendSection/>
           </div>
 
           {/* 作品 */}
