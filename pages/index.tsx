@@ -3645,7 +3645,7 @@ const PLAYLIST_DATA = [
       { title: 'Sincerity Is Scary', artist: 'The 1975', desc: 'A Brief Inquiry 专辑曲，探讨真诚在当代的尴尬处境' },
       { title: 'Man Of The Year', artist: 'Lorde', desc: 'Virgin 专辑曲，Lorde 回归的标志性力作' },
       { title: 'party 4 u', artist: 'Charli xcx', desc: "how i'm feeling now 中的心碎等待，派对背后的孤独" },
-      { title: 'Cupid's Curse (feat. Kehlani)', artist: 'Phora/Kehlani', desc: '爱神诅咒下的情感困境，双声部的深情碰撞' },
+      { title: "Cupid's Curse (feat. Kehlani)", artist: "Phora/Kehlani", desc: "爱神诅咒下的情感困境，双声部的深情碰撞" },
       { title: 'Me & U', artist: 'Tems', desc: 'Tems 的空灵 R&B，简单纯粹的二人世界' },
       { title: 'Little Things', artist: 'Ella Mai', desc: '3 专辑曲，细节里藏着的爱意与依恋' },
       { title: 'Homemade Dynamite', artist: 'Lorde', desc: 'Work From Home Bops 收录，年轻躁动的派对能量' },
