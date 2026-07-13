@@ -3492,6 +3492,64 @@ function AboutWebsite() {
 // ════════════════════════════════════════════
 const PLAYLIST_DATA = [
   {
+    date: '2026-06-25',
+    songs: [
+      { title: 'Castration', artist: 'Arca', desc: '前卫电子，Arca 标志性的工业质感与情绪张力' },
+      { title: 'Reverie', artist: 'Arca', desc: '梦幻氛围的实验电子，漂浮感十足' },
+      { title: 'Xen', artist: 'Arca', desc: 'Arca 同名专辑曲，探索性别与身份的电子实验' },
+      { title: 'sad day', artist: 'FKA twigs', desc: 'MAGDALENE 中的情绪宣泄，脆弱与力量并存' },
+      { title: 'Mind Loaded', artist: 'Blood Orange/Caroline Polachek', desc: '跨界合作的氛围 R&B，思绪过载的迷幻质感' },
+      { title: 'The Field', artist: 'Blood Orange/The Durutti Column', desc: '实验性的空间感电子，静谧而深邃' },
+      { title: 'Dive', artist: 'Tori Kelly', desc: 'God Must Really Love Me 专辑曲，沉浸式的 R&B 情感表达' },
+      { title: 'I Believe', artist: 'Caroline Polachek', desc: '另类流行的信仰与渴望，Caroline 标志性的戏剧张力' },
+      { title: 'Saunter', artist: 'Arca', desc: '轻盈漫步感的实验电子，情绪悠然' },
+      { title: 'Urchin', artist: 'Arca', desc: '尖刺质感的电子音效，Arca 的独特美学' },
+      { title: 'Knot', artist: 'Arca', desc: '&&&&& 专辑曲，纠缠与解开的情绪张力' },
+      { title: 'Ritual', artist: 'Arca', desc: 'Kick 专辑曲，仪式感十足的前卫电子' },
+      { title: 'Girl Like Me', artist: 'PinkPantheress', desc: 'Fancy That 专辑曲，PinkPantheress 的轻盈 Y2K 流行' },
+      { title: 'Wild Rice', artist: 'FaltyDL', desc: 'Be My Baby 专辑曲，律动感强的电子舞曲' },
+      { title: 'Ribs', artist: 'Lorde', desc: 'Pure Heroine 经典曲，关于青春与孤独的成长叙事' },
+      { title: 'Time', artist: 'Arca', desc: 'KiCk i 专辑曲，时间流逝的电子冥想' },
+    ]
+  },
+  {
+    date: '2026-07-01',
+    songs: [
+      { title: 'Pain', artist: 'Muni Long', desc: 'Public Displays Of Affection 专辑曲，痛苦中的 R&B 自白' },
+      { title: 'Plot Twist', artist: 'Muni Long', desc: '爱情中意想不到的转折，Muni Long 的细腻叙事' },
+      { title: 'IMU', artist: 'Muni Long', desc: 'I Miss You 的深情缩写，思念情绪的 R&B 表达' },
+      { title: 'CUFF IT', artist: 'Beyoncé', desc: 'RENAISSANCE 专辑的 disco 神曲，放肆享乐的舞池宣言' },
+      { title: 'Lemons', artist: 'Muni Long', desc: '将生活苦涩化为甜蜜的乐观 R&B' },
+      { title: 'Plot Twist', artist: 'AtHeart', desc: '1st EP 同名曲，清新独立流行的情感反转' },
+      { title: 'I Am You', artist: 'Kim Taylor', desc: '温柔民谣，关于爱人之间的镜像与共鸣' },
+      { title: 'Sincerity Is Scary', artist: 'The 1975', desc: 'A Brief Inquiry 专辑曲，探讨真诚在当代的尴尬处境' },
+      { title: 'Man Of The Year', artist: 'Lorde', desc: 'Virgin 专辑曲，Lorde 回归的标志性力作' },
+      { title: 'party 4 u', artist: 'Charli xcx', desc: 'how i'm feeling now 中的心碎等待，派对背后的孤独' },
+      { title: 'Cupid's Curse (feat. Kehlani)', artist: 'Phora/Kehlani', desc: '爱神诅咒下的情感困境，双声部的深情碰撞' },
+      { title: 'Me & U', artist: 'Tems', desc: 'Tems 的空灵 R&B，简单纯粹的二人世界' },
+      { title: 'Little Things', artist: 'Ella Mai', desc: '3 专辑曲，细节里藏着的爱意与依恋' },
+      { title: 'Homemade Dynamite', artist: 'Lorde', desc: 'Work From Home Bops 收录，年轻躁动的派对能量' },
+      { title: 'oh my love', artist: 'FKA twigs', desc: 'CAPRISONGS 中的柔情时刻，twigs 难得的温柔表达' },
+      { title: 'Love Songs (Bonus)', artist: 'Kaash Paige', desc: 'Parked Car Convos 专辑曲，80w+ 收藏的 R&B 情歌经典' },
+    ]
+  },
+  {
+    date: '2026-07-09',
+    songs: [
+      { title: 'Ladies Room', artist: 'Olivia Dean', desc: 'Messy 专辑曲，女孩们在化妆间的温柔友谊叙事' },
+      { title: 'meta angel', artist: 'FKA twigs', desc: 'CAPRISONGS 中的数字时代天使，赛博感与柔情并存' },
+      { title: 'On Your Mind (feat. Lil Yachty)', artist: 'FKA twigs', desc: '跨界合作的轻盈 R&B，思念悄悄爬上心头' },
+      { title: 'the bridge', artist: 'Kelela/PinkPantheress', desc: '两位前卫女声的联手，连接彼此的情感桥梁' },
+      { title: 'Wanderlust', artist: 'FKA twigs', desc: 'EUSEXUA 专辑曲，流浪与渴望的身体电子' },
+      { title: 'Piece Of Mine', artist: 'FKA twigs', desc: 'EUSEXUA Afterglow 曲，属于自己的那一片领地' },
+      { title: 'Love Crimes', artist: 'FKA twigs', desc: 'EUSEXUA Afterglow 曲，爱即罪行的黑暗浪漫' },
+      { title: 'Jealous Type', artist: 'Doja Cat', desc: 'Vie 专辑曲，承认嫉妒本性的自白 R&B' },
+      { title: 'Couples Therapy', artist: 'Doja Cat', desc: 'Vie 专辑曲，用治疗比喻关系修复的幽默叙事' },
+      { title: 'Gorgeous', artist: 'Doja Cat', desc: 'Vie 专辑曲，沉浸声效中的自我欣赏与赞美' },
+      { title: 'Acts of Service', artist: 'Doja Cat', desc: 'Vie 专辑曲，以服务表达爱意的五种语言探索' },
+    ]
+  },
+  {
     date: "2025-09-14",
     songs: [
       { title: "无聊的", artist: "小霞", desc: "中文慵懒 R&B，带点无所事事的漫然情绪" },
