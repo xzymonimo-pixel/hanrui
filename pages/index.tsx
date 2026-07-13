@@ -1486,9 +1486,9 @@ function WorksSection({ workCategories }) {
               <p style={{fontSize:13}}>没有找到相关作品～</p>
             </div>
           ) : (
-            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
+            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12,overflow:"hidden"}}>
               {searchResults.map((v,i)=>(
-                <div key={i} style={{position:"relative"}}>
+                <div key={i} style={{position:"relative",minWidth:0,overflow:"hidden"}}>
                   <div style={{position:"absolute",top:6,right:6,zIndex:2,background:"rgba(0,0,0,0.55)",borderRadius:100,padding:"2px 7px",fontSize:9,fontWeight:700,color:"#fff"}}>{v._cat}</div>
                   <BiliCard video={v}/>
                 </div>
