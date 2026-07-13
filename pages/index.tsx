@@ -177,10 +177,10 @@ const RECOMMEND_DATA = [
     tag: "考核",
   },
   {
-    bvid: "BV1nKkwBLED1",
+    bvid: "BV1KwvBBuEjD",
     title: "《黄昏晓》",
-    cover: "https://i2.hdslb.com/bfs/archive/478b683bf8f4e44e1ef425ba48216073d643f9ae.jpg",
-    url: "https://www.bilibili.com/video/BV1nKkwBLED1/",
+    cover: "http://i0.hdslb.com/bfs/archive/000f583cb3d56b6fc977f201ae6048d3f813565c.jpg",
+    url: "https://www.bilibili.com/video/BV1KwvBBuEjD/",
     desc: "四段高音升调，震撼人心",
     tag: "舞台",
   },
