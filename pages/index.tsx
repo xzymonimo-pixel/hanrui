@@ -189,7 +189,7 @@ const RECOMMEND_DATA = [
     title: "《爱要坦荡荡》",
     cover: "https://i0.hdslb.com/bfs/archive/09954882bccec5fda65c093567e04faf2ffffcc5.jpg",
     url: "https://www.bilibili.com/video/BV1PMBiBMEze/",
-    desc: "「孜染小子」名场面",
+    desc: "「孜然小子」大出圈",
     tag: "舞台",
   },
   {
@@ -205,7 +205,7 @@ const RECOMMEND_DATA = [
     title: "《Sing For You》",
     cover: "http://i0.hdslb.com/bfs/archive/aea845953053409053a3d6a4fe37d0bb3ba782b6.jpg",
     url: "https://www.bilibili.com/video/BV1BENc6mEkY/",
-    desc: "最新考核大魔王袭来，主唱地位无人撼动",
+    desc: "26年的夏天，期待已久的大主唱回归",
     tag: "考核",
   },
 ]
