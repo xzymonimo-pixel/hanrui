@@ -2424,7 +2424,7 @@ function MiaoDiary() {
   const [tab, setTab] = useState<"喵少"|"喵爷">("喵少")
   const [lightbox, setLightbox] = useState<string|null>(null)
 
-  const BASE = "https://res.cloudinary.com/demfj39xl/image/upload"
+  const BASE = "https://ik.imagekit.io/ruihouse/hanrui_public"
   const VBASE = "https://res.cloudinary.com/demfj39xl/video/upload"
 
   const entries = {
@@ -2437,12 +2437,20 @@ function MiaoDiary() {
       {
         date: "2024/09/23",
         content: "😼大家都来看一下，今天满九个月的张建国吧！建国宝宝又成长了一些😼相信大家也发现它最近发腮了😹加油 我们一起长大😾！（提一嘴：这两张张建国都是在我教爸爸怎么打光的过程中顺便拍的！感觉还可以😹）",
-        media: [1,2,3].map(n=>({ type:"img", url:`${BASE}/hanrui/public/2024-09/2024-09-23_21-23-09_${n}.jpg` })),
+        media: [1,2,3].map(n=>({ type:"img", url:`${BASE}_2024-09_2024-09-23_21-23-09_${n}_${n===1?"VKCBIJbYG":n===2?"2WSRbpf5_":"YbZWANg-E"}.jpg` })),
       },
       {
         date: "2024/12/23",
         content: "你好，张建国。今天是你的一岁生日，作为哥哥的我很开心能见证你这一年来的成长。希望你以后每一天都平安快乐，哥哥和爸爸妈妈会永远陪伴你。（你听不懂人类语言，我就不多说了😹）那么，让我们一起正式的祝张建国生日快乐吧——HAPPY BIRTHDAY 生日快乐🎊🎊🎊🎂🎂🎂🐱🐱",
-        media: [1,2,3,4,5,6,7].map(n=>({ type:"img", url:`${BASE}/hanrui/public/2024-12/2024-12-23_21-26-12_${n}.jpg` })),
+        media: [
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_1_zMuIH2v3e.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_2_b4f7w7ETT.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_3_UGG1_vIrk.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_4_dWvOjAb5L.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_5_YssQA0zEo.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_6_H7MXIww7D.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2024-12_2024-12-23_21-26-12_7_RDK-2vwH-.jpg"},
+  ],
       },
     ],
     喵爷: [
@@ -2454,7 +2462,12 @@ function MiaoDiary() {
       {
         date: "2025/10/18",
         content: "和小主人一起度过了小主人的16岁生日",
-        media: ["6","8","5","10"].map(n=>({ type:"img", url:`${BASE}/hanrui/public/2025-10/2025-10-18_10-18-29_${n}.jpg` })),
+        media: [
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2025-10_2025-10-18_10-18-29_6__rxJB49yY.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2025-10_2025-10-18_10-18-29_8_ggY7Df5no.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2025-10_2025-10-18_10-18-29_5_582sIVJPq.jpg"},
+    {type:"img", url:"https://ik.imagekit.io/ruihouse/hanrui_public_2025-10_2025-10-18_10-18-29_10_sOZDE81Xb.jpg"},
+  ],
       },
     ],
   }
@@ -2562,12 +2575,12 @@ const TRAVEL_DATA = [
     bestTime:"10-11月 / 3-4月",
     tips:["西街是泉州最古老的街道，开元寺必去","泉州小吃推荐面线糊、牛肉羹、海蛎煎","清源山可以俯瞰全城，老君岩石像很壮观","崇武古城海边风景绝美，适合拍日落","洛阳桥是中国第一座跨海石桥，历史悠久"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_1.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_2.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_3.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_4.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_5.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-22_20-26-56_6.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-22_20-26-56_1_Rydmyp59D.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-22_20-26-56_2_N8WTe2tEa.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-22_20-26-56_3_tY2scs6HD.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-22_20-26-56_4_tCO6bixy0.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-22_20-26-56_5_jyScXFNTA.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-22_20-26-56_6_eOvKYNm0f.jpg",
     ]
   },
   {
@@ -2581,15 +2594,15 @@ const TRAVEL_DATA = [
     bestTime:"3-5月 / 9-11月",
     tips:["宽窄巷子适合下午漫步，避开周末高峰","大熊猫基地建议早上8点前入园，熊猫最活跃","成都小吃推荐钟水饺、龙抄手、赖汤圆","武侯祠和锦里可以连着逛，步行5分钟","太古里适合夜晚拍照，灯光效果超好"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_1.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_2.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_3.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_4.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_5.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_6.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_7.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_8.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2024-09/2024-09-08_21-46-52_9.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_1_PAcqt9jNU.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_2_pGy9cBe1v.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_3_wjXtOakbs.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_3_wjXtOakbs.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_5_zlWi4xUCJ.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_6_4os6cvzp5.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_7_pxzogXMMP.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_8_uWqaJvZgn.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2024-09_2024-09-08_21-46-52_9_UCZmA7LLf.jpg",
     ]
   },
   {
@@ -2604,15 +2617,15 @@ const TRAVEL_DATA = [
     bestTime:"3-5月 / 9-10月",
     tips:["洪崖洞傍晚18:00后灯光亮起最美","解放碑步行街是购物好去处","来重庆必吃正宗火锅和小面","磁器口古镇适合拍照，避开周末人流"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_1.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_2.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_3.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_4.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_5.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_6.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_7.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_8.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-06/2025-06-17_15-14-39_9.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_1_vLOo6SJrS.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_2_vAeYKV0LU.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_3_wMqLdNVGK.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_4_ULSlPce1L.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_5_D7G5Qry32.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_6_i4k6VCrmZ0.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_7_etS7AT6WY.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_8_G-fjfyJ8G.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-06_2025-06-17_15-14-39_8_G-fjfyJ8G.jpg",
     ]
   },
   {
@@ -2626,15 +2639,15 @@ const TRAVEL_DATA = [
     bestTime:"11月-次年2月",
     tips:["骑楼老街是必去的历史街区，适合下午拍照","海南粉和清补凉是当地必吃美食","假日海滩适合看日落，傍晚最美","五公祠历史悠久，了解海南文化必去","从海口坐高铁可以快速去三亚"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_8.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_3.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_6.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_7.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_1.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_2.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_4.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_5.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2026-04/2026-04-15_20-36-45_9.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_8_iC-WibE4E.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_3_-ZaeGSMh6.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_6_tIHDOIbKI.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_7_UB3bpCvDI.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_1_k562mjDbw.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_2_j7yphrhYF.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_4_6gSsfEcjL.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_5_EqAYONb2h.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2026-04_2026-04-15_20-36-45_9_eus54XlaP.jpg",
     ]
   },
   {
@@ -2648,21 +2661,21 @@ const TRAVEL_DATA = [
     bestTime:"4-6月 / 10-11月",
     tips:["岛上交通建议租电动车，方便游览各个海滩","青澳湾沙滩细腻，是最受欢迎的游泳区","总兵府历史悠久，了解南澳岛历史必去","推荐尝试本地海鲜，生蚝和螃蟹超级鲜甜","建议住岛上民宿，晚上可以看星星"],
     scenery:[
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_8.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_13.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_10.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_2.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_15.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_7.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_1.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_5.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_12.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_14.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_6.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_3.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_11.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_9.jpg",
-      "https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/2025-08/2025-08-30_20-55-58_4.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_8_b32aiF3IJ.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_12_Wk5AE9iDI.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_10_ZyeBTQzTQ.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_2_wdHH7iQBf.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_15_Y3Cdeye7v.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_7_euP6LHoV8.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_1_32cUhruqI.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_5_gTJJZzhRi.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_12_Wk5AE9iDI.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_14_eZmkCMnMZ.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_6_Uq1vLYQOa.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_3_f2fxXmxiH.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_11_1foreZQCA.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_9_T1OMqsP1o.jpg",
+      "https://ik.imagekit.io/ruihouse/hanrui_public_2025-08_2025-08-30_20-55-58_4_Hu-1edN4J.jpg",
     ]
   },
 ]
@@ -2687,7 +2700,7 @@ function ChinaMapSVG({ cities, onCityClick, activeCity }) {
   return (
     <div style={{position:"relative",width:"100%",userSelect:"none"}}>
       <img
-        src="https://res.cloudinary.com/demfj39xl/image/upload/v1780068528/hanrui/public/image/travel-map.png"
+        src="https://ik.imagekit.io/ruihouse/hanrui_public_image_travel-map_nuN65jwxd.jpg"
         alt="中国地图"
         style={{width:"100%",display:"block",borderRadius:10}}
       />
@@ -4189,7 +4202,7 @@ export default function Home({ data }) {
         html{scroll-behavior:smooth}
         body{
           font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
-          background:url('https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/bj.png') no-repeat center center fixed;
+          background:url('https://ik.imagekit.io/ruihouse/hanrui_public_image_bj_PD4_nO7E8.jpg') no-repeat center center fixed;
           background-size:cover;color:var(--c-ink);min-height:100vh;
           -webkit-font-smoothing:antialiased;
         }
@@ -4426,7 +4439,7 @@ export default function Home({ data }) {
           {/* Hero */}
           <div className="hero-banner">
             <div className="about-avatar">
-              <img src="https://res.cloudinary.com/demfj39xl/image/upload/hanrui/public/image/avatar.jpg" alt="avatar"/>
+              <img src="https://ik.imagekit.io/ruihouse/hanrui_public_image_avatar_JUDu9_5N0.jpg" alt="avatar"/>
             </div>
             <div style={{position:"relative",zIndex:1,flex:1}}>
               <div style={{display:"inline-flex",alignItems:"center",background:"rgba(255,255,255,0.45)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",borderRadius:100,padding:"3px 13px 3px 6px",fontSize:10,fontWeight:700,color:"var(--c-ink-2)",letterSpacing:"0.07em",marginBottom:12,border:"1px solid rgba(160,210,172,0.40)",gap:6}}>
