@@ -1393,7 +1393,7 @@ function RecommendSection() {
             >
               {/* 封面 */}
               <div style={{position:"relative",aspectRatio:"16/9",overflow:"hidden",background:"rgba(160,210,172,0.2)"}}>
-                <img src={v.cover} alt={v.title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                <img src={biliImgProxy(v.cover)} alt={v.title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
                 <div style={{position:"absolute",top:6,left:6,background:"rgba(0,161,214,0.85)",borderRadius:5,padding:"2px 7px",fontSize:9,fontWeight:700,color:"#fff"}}>bilibili</div>
                 <div style={{position:"absolute",top:6,right:6,borderRadius:100,padding:"2px 8px",fontSize:9,fontWeight:700,color:"#fff",
                   background: v.tag==="考核" ? "rgba(220,100,60,0.85)" : "rgba(40,140,80,0.85)"
