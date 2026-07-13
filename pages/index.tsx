@@ -1293,28 +1293,106 @@ function BiliCard({ video }) {
 function WorksSection({ workCategories }) {
   const tabs=["舞台","考核","编曲","直拍","抖音","百万视频"]
   const [activeTab,setActiveTab]=useState("舞台")
+  const [searchQuery,setSearchQuery]=useState("")
+
+  const allSearchable = useMemo(()=>{
+    const bili = [...(BILIBILI_VIDEOS["舞台"]||[]).map(v=>({...v,_cat:"舞台"})),
+                  ...(BILIBILI_VIDEOS["考核"]||[]).map(v=>({...v,_cat:"考核"}))]
+    const zhipai = ZHIPAI_DATA.flatMap(s=>s.videos.map(v=>({...v,_cat:"直拍",_station:s.name})))
+    const baiwan = BAIWANWUTAI_DATA.map(v=>({...v,_cat:"百万视频"}))
+    return [...bili,...zhipai,...baiwan]
+  },[])
+
+  const searchResults = useMemo(()=>{
+    if(!searchQuery.trim()) return []
+    const q = searchQuery.trim().toLowerCase()
+    return allSearchable.filter(v=>{
+      const title = (v.title||"").toLowerCase()
+      const tags = (v.tags||[]).join(" ").toLowerCase()
+      const event = (v.event||"").toLowerCase()
+      const station = (v._station||"").toLowerCase()
+      return title.includes(q)||tags.includes(q)||event.includes(q)||station.includes(q)
+    })
+  },[searchQuery,allSearchable])
+
+  const isSearching = searchQuery.trim().length > 0
 
   return (
     <div>
-      {/* Tabs */}
-      <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
-        {tabs.map(t=>(
-          <button key={t} onClick={()=>setActiveTab(t)} style={{
-            padding:"6px 16px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
-            border:"1px solid",transition:"all 0.18s",
-            ...(activeTab===t
-              ?{background:"linear-gradient(135deg,rgba(162,214,174,0.6),rgba(130,190,152,0.45))",borderColor:"rgba(120,185,142,0.7)",color:"var(--c-ink)",boxShadow:"0 2px 10px rgba(40,100,56,0.12)"}
-              :{background:"rgba(255,255,255,0.38)",borderColor:"rgba(195,228,206,0.5)",color:"var(--c-muted)"}
-            ),
-          }}>{t}</button>
-        ))}
+      <div style={{position:"relative",marginBottom:16}}>
+        <span style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",fontSize:14,color:"var(--c-muted)",pointerEvents:"none"}}>🔍</span>
+        <input
+          value={searchQuery}
+          onChange={e=>setSearchQuery(e.target.value)}
+          placeholder="搜索作品名、曲目、活动名…"
+          style={{
+            width:"100%",boxSizing:"border-box",
+            padding:"9px 36px 9px 36px",
+            borderRadius:100,fontSize:12,fontFamily:"inherit",
+            border:"1px solid rgba(195,228,206,0.6)",
+            background:"rgba(240,250,243,0.7)",
+            backdropFilter:"blur(8px)",
+            color:"var(--c-ink)",outline:"none",
+            transition:"border-color 0.18s, box-shadow 0.18s",
+          }}
+          onFocus={e=>{e.target.style.borderColor="rgba(120,185,142,0.8)";e.target.style.boxShadow="0 0 0 3px rgba(162,214,174,0.2)"}}
+          onBlur={e=>{e.target.style.borderColor="rgba(195,228,206,0.6)";e.target.style.boxShadow="none"}}
+        />
+        {searchQuery&&<button onClick={()=>setSearchQuery("")} style={{
+          position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",
+          background:"none",border:"none",cursor:"pointer",fontSize:14,color:"var(--c-muted)",padding:0,lineHeight:1,
+        }}>×</button>}
       </div>
 
-      {activeTab==="直拍" && <ZhipaiSection/>}
-      {activeTab==="抖音" && <DouyinSection/>}
-      {activeTab==="百万视频" && <BaiwanSection/>}
-      {activeTab==="编曲" && <BianzouSection/>}
-      {(activeTab==="舞台"||activeTab==="考核") && <BiliTabContent tab={activeTab}/>}
+      {isSearching ? (
+        <div>
+          <div style={{fontSize:12,color:"var(--c-muted)",marginBottom:12}}>
+            找到 <b style={{color:"var(--c-ink)"}}>{searchResults.length}</b> 个结果
+            {searchResults.length>0&&<span style={{marginLeft:6,fontSize:11}}>
+              {["舞台","考核","直拍","百万视频"].map(cat=>{
+                const n = searchResults.filter(v=>v._cat===cat).length
+                return n>0 ? <span key={cat} style={{marginRight:8,background:"rgba(162,214,174,0.3)",borderRadius:100,padding:"1px 8px"}}>{cat} {n}</span> : null
+              })}
+            </span>}
+          </div>
+          {searchResults.length===0 ? (
+            <div style={{textAlign:"center",padding:"40px 0",color:"var(--c-faint)"}}>
+              <div style={{fontSize:32,marginBottom:8}}>🔍</div>
+              <p style={{fontSize:13}}>没有找到相关作品～</p>
+            </div>
+          ) : (
+            <div className="bili-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:12}}>
+              {searchResults.map((v,i)=>(
+                <div key={i} style={{position:"relative"}}>
+                  <div style={{position:"absolute",top:6,right:6,zIndex:2,background:"rgba(0,0,0,0.55)",borderRadius:100,padding:"2px 7px",fontSize:9,fontWeight:700,color:"#fff"}}>{v._cat}</div>
+                  <BiliCard video={v}/>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="tabs-scroll" style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
+            {tabs.map(t=>(
+              <button key={t} onClick={()=>setActiveTab(t)} style={{
+                padding:"6px 16px",borderRadius:100,fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",
+                border:"1px solid",transition:"all 0.18s",
+                ...(activeTab===t
+                  ?{background:"linear-gradient(135deg,rgba(162,214,174,0.6),rgba(130,190,152,0.45))",borderColor:"rgba(120,185,142,0.7)",color:"var(--c-ink)",boxShadow:"0 2px 10px rgba(40,100,56,0.12)"}
+                  :{background:"rgba(255,255,255,0.38)",borderColor:"rgba(195,228,206,0.5)",color:"var(--c-muted)"}
+                ),
+              }}>{t}</button>
+            ))}
+          </div>
+
+          {activeTab==="直拍" && <ZhipaiSection/>}
+          {activeTab==="抖音" && <DouyinSection/>}
+          {activeTab==="百万视频" && <BaiwanSection/>}
+          {activeTab==="编曲" && <BianzouSection/>}
+          {(activeTab==="舞台"||activeTab==="考核") && <BiliTabContent tab={activeTab}/>}
+        </>
+      )}
     </div>
   )
 }
